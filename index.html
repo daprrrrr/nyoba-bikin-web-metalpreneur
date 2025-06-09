@@ -494,18 +494,17 @@
                     rincian: simplifiedCartString,
                     total: total,
                 };
-                
+
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(orderData));
+
                 try {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
-                        body: JSON.stringify(orderData),
-                        headers: {
-                            'Content-Type': 'text/plain;charset=utf-8',
-                        },
+                        body: formData
                     });
 
-                    // Karena kita tidak bisa membaca respons dari 'no-cors' atau redirect,
-                    // kita akan langsung anggap sukses jika fetch tidak melempar error jaringan.
+                    // Anggap sukses jika fetch tidak langsung error, karena redirect akan menyebabkan 'opaque' response
                     console.log("Data sent to Google Sheets.");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
