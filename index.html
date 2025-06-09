@@ -341,7 +341,7 @@
                         const itemTotal = item.finalPrice * item.quantity;
                         total += itemTotal;
                         itemCount += item.quantity;
-                        dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${item.name} ${item.size ? `(${item.size})` : ''}</h4><p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-3 text-center">${item.quantity}</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div></div>`;
+                        dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${item.name} ${item.size ? `(${item.size})` : ''}</h4><p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-3 text-center">${item.quantity}</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}"><i data-lucide="trash-2" class="w-6 h-6"></i></button></div></div>`;
                     });
                     dom.checkoutBtn.disabled = false;
                 }
@@ -474,10 +474,12 @@
             };
 
             const submitOrder = async () => {
-                if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec") {
+                const url = GOOGLE_SCRIPT_URL;
+                if (url === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec" || url === "") {
                     alert("URL Google Script belum diatur. Silakan hubungi admin.");
                     return;
                 }
+
                 dom.finishPaymentBtn.disabled = true;
                 dom.finishPaymentBtn.textContent = 'Mengirim...';
 
@@ -491,17 +493,20 @@
                     rincian: simplifiedCartString,
                     total: total,
                 };
+                
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(orderData));
+
 
                 try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    // Menggunakan metode pengiriman yang lebih sederhana untuk menghindari masalah CORS
+                    const response = await fetch(url, {
                         method: 'POST',
                         body: JSON.stringify(orderData),
-                        // Headers di-handle oleh browser saat mengirimkan data dari form
+                        mode: 'no-cors' // Penting untuk menghindari error CORS saat mengirim ke Google Script
                     });
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                    console.log("Request sent. Google Script will handle it.");
                     
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
@@ -517,7 +522,7 @@
 
                 } catch (error) {
                     console.error("Error submitting order: ", error);
-                    alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`);
+                    alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
                 } finally {
                     dom.finishPaymentBtn.disabled = false;
                     dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
