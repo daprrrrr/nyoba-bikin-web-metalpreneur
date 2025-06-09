@@ -504,8 +504,9 @@
                         body: formData
                     });
 
-                    // Anggap sukses jika fetch tidak langsung error, karena redirect akan menyebabkan 'opaque' response
-                    console.log("Data sent to Google Sheets.");
+                    // Karena Google Script melakukan redirect, kita tidak bisa membaca responsnya.
+                    // Jika fetch tidak melempar error, kita anggap pengiriman berhasil.
+                    console.log("Data sent to Google Sheets (assumed success).");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
                     toggleModal(dom.successModal, true);
@@ -520,7 +521,7 @@
 
                 } catch (error) {
                     console.error("Error submitting order:", error);
-                     alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Detail: ${error.message}`);
+                     alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
                 } finally {
                     dom.finishPaymentBtn.disabled = false;
                     dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
