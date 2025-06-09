@@ -65,6 +65,29 @@
             position: relative;
             z-index: 10;
         }
+        /* Style untuk Animasi Centang */
+        .success-animation-circle {
+            stroke-dasharray: 264;
+            stroke-dashoffset: 264;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .success-animation-checkmark {
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        .product-card {
+            cursor: pointer;
+        }
+        .thumbnail-active {
+            border-color: #4f46e5; /* Indigo */
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="antialiased text-gray-800">
@@ -140,12 +163,41 @@
             </div>
         </div>
     </div>
-    <div id="size-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="flex items-center justify-between p-5 border-b"><h2 class="text-2xl font-bold">Pilih Ukuran</h2><button class="close-modal-btn p-1 rounded-full hover:bg-gray-200" data-modal-id="size-modal"><i data-lucide="x" class="w-6 h-6"></i></button></div>
-            <div class="p-5"><p class="mb-4 text-gray-600">Silakan pilih ukuran untuk <strong id="size-product-name"></strong>.</p><div id="size-options" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div></div>
+    
+    <!-- Modal Detail Produk -->
+    <div id="product-detail-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row">
+            <!-- Bagian Gambar -->
+            <div class="w-full md:w-1/2 p-4 flex flex-col">
+                <div class="relative">
+                    <img id="main-product-image" src="" alt="Detail Produk" class="w-full h-96 object-contain rounded-lg">
+                    <button id="prev-image-btn" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md hover:bg-white"><i data-lucide="chevron-left"></i></button>
+                    <button id="next-image-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md hover:bg-white"><i data-lucide="chevron-right"></i></button>
+                </div>
+                <div id="thumbnail-container" class="flex gap-2 mt-4 justify-center">
+                    <!-- Thumbnails akan dimuat di sini -->
+                </div>
+            </div>
+            <!-- Bagian Info dan Aksi -->
+            <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
+                <div>
+                    <h2 id="detail-product-name" class="text-3xl font-bold text-gray-900"></h2>
+                    <p id="detail-product-price" class="text-2xl font-semibold text-indigo-600 my-4"></p>
+                    <div id="detail-size-container" class="mt-4">
+                        <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran:</p>
+                        <div id="detail-size-options" class="flex flex-wrap gap-3">
+                            <!-- Opsi ukuran akan dimuat di sini -->
+                        </div>
+                    </div>
+                </div>
+                <div id="detail-action-container" class="mt-6">
+                     <!-- Tombol Tambah/Kuantitas akan dimuat di sini -->
+                </div>
+            </div>
+            <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="product-detail-modal"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
     </div>
+
     <div id="customer-data-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-lg">
              <div class="flex items-center justify-between p-5 border-b"><h2 class="text-2xl font-bold">Data Diri & Pengiriman</h2><button class="close-modal-btn p-1 rounded-full hover:bg-gray-200" data-modal-id="customer-data-modal"><i data-lucide="x" class="w-6 h-6"></i></button></div>
@@ -179,271 +231,385 @@
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA WEBSITE (TIPE MODULE) -->
-    <script type="module">
-        // Import fungsi-fungsi yang dibutuhkan dari SDK Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
-        
-        // Kunci Konfigurasi Firebase Anda
-        const firebaseConfig = {
-            apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
-            authDomain: "database-immt-shop-2.firebaseapp.com",
-            projectId: "database-immt-shop-2",
-            storageBucket: "database-immt-shop-2.appspot.com", // Pastikan berakhiran .appspot.com
-            messagingSenderId: "490881653909",
-            appId: "1:490881653909:web:f61209d5a3a38be3260f9c"
-            // measurementId opsional, bisa dihapus jika tidak ada
-        };
+    <!-- Modal Konfirmasi Sukses -->
+    <div id="success-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm text-center p-8">
+            <div class="mx-auto">
+                <svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100">
+                    <circle class="success-animation-circle" cx="50" cy="50" r="40" stroke="#10B981" stroke-width="8" fill="transparent"/>
+                    <polyline class="success-animation-checkmark" points="30,55 45,70 70,40" stroke="#10B981" stroke-width="8" fill="transparent" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mt-6">Pesanan Diterima!</h2>
+            <p class="text-gray-600 mt-2">Pesanan kamu sudah kami terima, terima kasih!</p>
+        </div>
+    </div>
 
-        // Inisialisasi Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    <!-- SCRIPT UTAMA WEBSITE -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // =====================================================================
+            // PENTING: PASTE URL WEB APP ANDA DARI GOOGLE SCRIPT DI SINI
+            // =====================================================================
+            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec";
+            // =====================================================================
+            
+            const products = [
+                { id: 1, name: 'Jaslab', price: 140000, image: 'assets/jaslab-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/jaslab-1.png', 'assets/jaslab-2.png', 'assets/size-chart-a.png']},
+                { id: 2, name: 'Workshirt Kerja Praktik', price: 160000, image: 'assets/workshirt-kp-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-kp-1.png', 'assets/workshirt-kp-2.png', 'assets/size-chart-b.png']},
+                { id: 3, name: 'Workshirt Metalurgi', price: 179000, image: 'assets/workshirt-metal-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-metal-1.png', 'assets/workshirt-metal-2.png', 'assets/size-chart-c.png']},
+                { id: 4, name: 'Sticker (3pcs)', price: 15000, image: 'assets/sticker-pack-1.png', hasSizes: false, detailImages: ['assets/sticker-pack-1.png', 'assets/sticker-pack-2.png', 'assets/sticker-pack-3.png'] },
+                { id: 5, name: 'Sticker mobil', price: 15000, image: 'assets/sticker-mobil-1.png', hasSizes: false, detailImages: ['assets/sticker-mobil-1.png', 'assets/sticker-mobil-2.png', 'assets/sticker-mobil-3.png'] },
+                { id: 6, name: 'Keychain IMMt', price: 15000, image: 'assets/keychain-immt-1.png', hasSizes: false, detailImages: ['assets/keychain-immt-1.png', 'assets/keychain-immt-2.png', 'assets/keychain-immt-3.png'] },
+                { id: 7, name: 'Keychain Makara UI', price: 15000, image: 'assets/keychain-makara-1.png', hasSizes: false, detailImages: ['assets/keychain-makara-1.png', 'assets/keychain-makara-2.png', 'assets/keychain-makara-3.png'] },
+                { id: 8, name: 'Paket Alat Gamtek', price: 200000, image: 'assets/gamtek-1.png', hasSizes: false, detailImages: ['assets/gamtek-1.png', 'assets/gamtek-2.png', 'assets/gamtek-3.png'] },
+            ];
+            let cart = [];
+            let currentDetailProduct = null;
+            let currentImageIndex = 0;
+            let countdownInterval = null;
+            let customerData = null;
+            let selectedSize = null;
 
-        // -- Kode Logika Website Dimulai Di Sini --
-
-        const products = [
-            { id: 1, name: 'Produk Premium A', price: 250000, image: 'https://placehold.co/600x600/3498db/ffffff?text=A', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'] },
-            { id: 2, name: 'Barang Elegan B', price: 450000, image: 'https://placehold.co/600x600/e74c3c/ffffff?text=B', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'] },
-            { id: 3, name: 'Gadget Canggih C', price: 1200000, image: 'https://placehold.co/600x600/2ecc71/ffffff?text=C', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'] },
-            { id: 4, name: 'Aksesori Modern D', price: 150000, image: 'https://placehold.co/600x600/f1c40f/ffffff?text=D', hasSizes: false },
-            { id: 5, name: 'Peralatan Handal E', price: 750000, image: 'https://placehold.co/600x600/9b59b6/ffffff?text=E', hasSizes: false },
-            { id: 6, name: 'Item Fashion F', price: 320000, image: 'https://placehold.co/600x600/1abc9c/ffffff?text=F', hasSizes: false },
-            { id: 7, name: 'Solusi Praktis G', price: 95000, image: 'https://placehold.co/600x600/e67e22/ffffff?text=G', hasSizes: false },
-            { id: 8, name: 'Kebutuhan Harian H', price: 50000, image: 'https://placehold.co/600x600/34495e/ffffff?text=H', hasSizes: false },
-        ];
-        let cart = [];
-        let productForSizing = null;
-        let countdownInterval = null;
-        let customerData = null;
-
-        const dom = {
-            productsGrid: document.getElementById('products-grid'),
-            cartModal: document.getElementById('cart-modal'),
-            sizeModal: document.getElementById('size-modal'),
-            customerDataModal: document.getElementById('customer-data-modal'),
-            paymentModal: document.getElementById('payment-modal'),
-            openCartBtn: document.getElementById('open-cart-btn'),
-            checkoutBtn: document.getElementById('checkout-btn'),
-            cartItemsContainer: document.getElementById('cart-items'),
-            sizeOptionsContainer: document.getElementById('size-options'),
-            cartTotalEl: document.getElementById('cart-total'),
-            cartCountBadge: document.getElementById('cart-count-badge'),
-            sizeProductName: document.getElementById('size-product-name'),
-            customerForm: document.getElementById('customer-form'),
-            finishPaymentBtn: document.getElementById('finish-payment-btn'),
-            closeModalBtns: document.querySelectorAll('.close-modal-btn'),
-            orderSummaryItems: document.getElementById('order-summary-items'),
-            orderSummaryTotal: document.getElementById('order-summary-total'),
-            customerDataSummary: document.getElementById('customer-data-summary'),
-            countdownTimer: document.getElementById('countdown-timer'),
-        };
-
-        const formatCurrency = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
-        const calculatePrice = (basePrice, size) => basePrice + ((['XL','XXL','3XL','4XL','5XL'].indexOf(size) + 1) * 5000 || 0);
-        const toggleModal = (modal, show) => modal.classList.toggle('visible', show);
-
-        const updateUI = () => {
-            renderProducts();
-            renderCart();
-        };
-
-        const renderProducts = () => {
-            dom.productsGrid.innerHTML = '';
-            products.forEach(product => {
-                const totalQuantityInCart = cart.filter(item => item.id === product.id).reduce((sum, item) => sum + item.quantity, 0);
-                const buttonHTML = totalQuantityInCart > 0
-                    ? `<div class="flex items-center justify-center border rounded-lg"><button class="quantity-change-btn p-3" data-product-id="${product.id}" data-change="-1">-</button><span class="px-4 font-bold text-lg">${totalQuantityInCart}</span><button class="quantity-change-btn p-3" data-product-id="${product.id}" data-change="1">+</button></div>`
-                    : `<button data-product-id="${product.id}" class="add-to-cart-btn w-full bg-gray-800 text-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-900 flex items-center justify-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5"></i><span>Tambah</span></button>`;
-                dom.productsGrid.innerHTML += `<div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"><img src="${product.image}" alt="${product.name}" class="w-full h-56 object-cover"><div class="p-6 flex-grow flex flex-col"><div class="flex-grow"><h3 class="text-xl font-bold text-gray-800 mb-2">${product.name}</h3><p class="text-lg font-semibold text-indigo-600 mb-4">${formatCurrency(product.price)}${product.hasSizes ? ' (mulai)' : ''}</p></div><div class="mt-auto">${buttonHTML}</div></div></div>`;
-            });
-            lucide.createIcons();
-        };
-
-        const renderCart = () => {
-            dom.cartItemsContainer.innerHTML = '';
-            let total = 0, itemCount = 0;
-            if (cart.length === 0) {
-                dom.cartItemsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">Keranjang belanja Anda kosong.</p>`;
-                dom.checkoutBtn.disabled = true;
-            } else {
-                cart.forEach(item => {
-                    const itemTotal = item.finalPrice * item.quantity;
-                    total += itemTotal;
-                    itemCount += item.quantity;
-                    dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${item.name} ${item.size ? `(${item.size})` : ''}</h4><p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-3 text-center">${item.quantity}</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div></div>`;
-                });
-                dom.checkoutBtn.disabled = false;
-            }
-            dom.cartTotalEl.textContent = formatCurrency(total);
-            dom.cartCountBadge.textContent = itemCount;
-            lucide.createIcons();
-        };
-
-        const addToCart = (productId, size = null) => {
-            const product = products.find(p => p.id === productId);
-            const finalPrice = product.hasSizes ? calculatePrice(product.price, size) : product.price;
-            const cartItemId = size ? `${productId}-${size}` : `${productId}`;
-            let cartItem = cart.find(item => item.cartItemId === cartItemId);
-            if (cartItem) cartItem.quantity++;
-            else cart.push({ ...product, quantity: 1, size, finalPrice, cartItemId });
-            updateUI();
-        };
-
-        const updateCartQuantity = (cartItemId, change) => {
-            let cartItem = cart.find(item => item.cartItemId === cartItemId);
-            if (!cartItem) return;
-            cartItem.quantity += change;
-            if (cartItem.quantity <= 0) cart = cart.filter(item => item.cartItemId !== cartItemId);
-            updateUI();
-        };
-
-        const handleQuantityChangeFromGrid = (productId, change) => {
-             const itemsInCart = cart.filter(item => item.id === productId);
-             if (itemsInCart.length === 0) return;
-             if (change > 0) updateCartQuantity(itemsInCart[0].cartItemId, 1);
-             else updateCartQuantity(itemsInCart[itemsInCart.length - 1].cartItemId, -1);
-        };
-
-        const openSizeSelection = (productId) => {
-            productForSizing = products.find(p => p.id === productId);
-            dom.sizeProductName.textContent = productForSizing.name;
-            dom.sizeOptionsContainer.innerHTML = '';
-            productForSizing.sizes.forEach(size => {
-                const finalPrice = calculatePrice(productForSizing.price, size);
-                const priceDiff = finalPrice - productForSizing.price;
-                dom.sizeOptionsContainer.innerHTML += `<button class="select-size-btn border p-3 rounded-lg text-center hover:bg-indigo-600 hover:text-white transition-colors" data-size="${size}"><span class="font-semibold block">${size}</span><span class="text-xs">${priceDiff > 0 ? `(+${formatCurrency(priceDiff)})` : 'Normal'}</span></button>`;
-            });
-            toggleModal(dom.sizeModal, true);
-        };
-
-        const startCountdown = () => {
-            clearInterval(countdownInterval);
-            let duration = 300; // 5 menit
-            countdownInterval = setInterval(() => {
-                const minutes = Math.floor(duration / 60).toString().padStart(2, '0');
-                const seconds = (duration % 60).toString().padStart(2, '0');
-                dom.countdownTimer.textContent = `${minutes}:${seconds}`;
-                if (--duration < 0) handlePaymentTimeout();
-            }, 1000);
-        };
-
-        const handlePaymentTimeout = () => {
-            clearInterval(countdownInterval);
-            alert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
-            toggleModal(dom.paymentModal, false);
-            cart = [];
-            customerData = null;
-            dom.customerForm.reset();
-            updateUI();
-        };
-        
-        const populateConfirmationPage = (formData) => {
-            dom.orderSummaryItems.innerHTML = cart.map(item => `
-                <div class="flex justify-between text-sm">
-                    <span>${item.name} ${item.size ? `(${item.size})` : ''} x ${item.quantity}</span>
-                    <span>${formatCurrency(item.finalPrice * item.quantity)}</span>
-                </div>
-            `).join('');
-            const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
-            dom.orderSummaryTotal.textContent = formatCurrency(total);
-            dom.customerDataSummary.innerHTML = '';
-            customerData = {};
-            formData.forEach((value, key) => {
-                customerData[key] = value;
-                dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
-            });
-        };
-
-        const submitOrder = async () => {
-            dom.finishPaymentBtn.disabled = true;
-            dom.finishPaymentBtn.textContent = 'Mengirim...';
-
-            const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
-            const simplifiedCart = cart.map(item => ({
-                name: item.name,
-                size: item.size || 'N/A',
-                quantity: item.quantity,
-                price: item.finalPrice
-            }));
-
-            const orderData = {
-                customer: customerData,
-                items: simplifiedCart,
-                totalAmount: total,
-                createdAt: serverTimestamp() // Menambahkan waktu server saat pesanan dibuat
+            const dom = {
+                productsGrid: document.getElementById('products-grid'),
+                cartModal: document.getElementById('cart-modal'),
+                productDetailModal: document.getElementById('product-detail-modal'),
+                customerDataModal: document.getElementById('customer-data-modal'),
+                paymentModal: document.getElementById('payment-modal'),
+                successModal: document.getElementById('success-modal'),
+                openCartBtn: document.getElementById('open-cart-btn'),
+                checkoutBtn: document.getElementById('checkout-btn'),
+                cartItemsContainer: document.getElementById('cart-items'),
+                mainProductImage: document.getElementById('main-product-image'),
+                thumbnailContainer: document.getElementById('thumbnail-container'),
+                prevImageBtn: document.getElementById('prev-image-btn'),
+                nextImageBtn: document.getElementById('next-image-btn'),
+                detailProductName: document.getElementById('detail-product-name'),
+                detailProductPrice: document.getElementById('detail-product-price'),
+                detailSizeContainer: document.getElementById('detail-size-container'),
+                detailSizeOptions: document.getElementById('detail-size-options'),
+                detailActionContainer: document.getElementById('detail-action-container'),
+                cartTotalEl: document.getElementById('cart-total'),
+                cartCountBadge: document.getElementById('cart-count-badge'),
+                customerForm: document.getElementById('customer-form'),
+                finishPaymentBtn: document.getElementById('finish-payment-btn'),
+                closeModalBtns: document.querySelectorAll('.close-modal-btn'),
+                orderSummaryItems: document.getElementById('order-summary-items'),
+                orderSummaryTotal: document.getElementById('order-summary-total'),
+                customerDataSummary: document.getElementById('customer-data-summary'),
+                countdownTimer: document.getElementById('countdown-timer'),
             };
 
-            try {
-                const docRef = await addDoc(collection(db, "orders"), orderData);
-                console.log("Document written with ID: ", docRef.id);
+            const formatCurrency = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+            const calculatePrice = (basePrice, size) => basePrice + ((['XL','XXL','3XL','4XL','5XL'].indexOf(size) + 1) * 5000 || 0);
+            const toggleModal = (modal, show) => modal.classList.toggle('visible', show);
+
+            const updateUI = () => {
+                renderProducts();
+                renderCart();
+            };
+
+            const renderProducts = () => {
+                dom.productsGrid.innerHTML = '';
+                products.forEach(product => {
+                    const productCard = `
+                        <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300" data-product-id="${product.id}">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-56 object-cover pointer-events-none" onerror="this.onerror=null; this.src='https://placehold.co/600x600/cccccc/ffffff?text=Gambar+Error';">
+                            <div class="p-6 flex-grow flex flex-col pointer-events-none">
+                                <div class="flex-grow">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-2">${product.name}</h3>
+                                    <p class="text-lg font-semibold text-indigo-600 mb-4">${formatCurrency(product.price)}${product.hasSizes ? ' (mulai)' : ''}</p>
+                                </div>
+                                <div class="mt-auto">
+                                    <button class="w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg">Lihat Detail</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    dom.productsGrid.innerHTML += productCard;
+                });
+            };
+
+            const renderCart = () => {
+                dom.cartItemsContainer.innerHTML = '';
+                let total = 0, itemCount = 0;
+                if (cart.length === 0) {
+                    dom.cartItemsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">Keranjang belanja Anda kosong.</p>`;
+                    dom.checkoutBtn.disabled = true;
+                } else {
+                    cart.forEach(item => {
+                        const itemTotal = item.finalPrice * item.quantity;
+                        total += itemTotal;
+                        itemCount += item.quantity;
+                        dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${item.name} ${item.size ? `(${item.size})` : ''}</h4><p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-3 text-center">${item.quantity}</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}"><i data-lucide="trash-2" class="w-5 h-5"></i></button></div></div>`;
+                    });
+                    dom.checkoutBtn.disabled = false;
+                }
+                dom.cartTotalEl.textContent = formatCurrency(total);
+                dom.cartCountBadge.textContent = itemCount;
+                lucide.createIcons();
+            };
+            
+            const addToCart = (productId, size = null) => {
+                const product = products.find(p => p.id === productId);
+                const finalPrice = product.hasSizes ? calculatePrice(product.price, size) : product.price;
+                const cartItemId = size ? `${productId}-${size}` : `${productId}`;
+                let cartItem = cart.find(item => item.cartItemId === cartItemId);
+                if (cartItem) {
+                    cartItem.quantity++;
+                } else {
+                    cart.push({ ...product, quantity: 1, size, finalPrice, cartItemId });
+                }
+                updateUI();
+                renderDetailActionButtons();
+            };
+
+            const updateCartQuantity = (cartItemId, change) => {
+                let cartItem = cart.find(item => item.cartItemId === cartItemId);
+                if (!cartItem) return;
+                cartItem.quantity += change;
+                if (cartItem.quantity <= 0) {
+                    cart = cart.filter(item => item.cartItemId !== cartItemId);
+                }
+                updateUI();
+                renderDetailActionButtons();
+            };
+
+            const openProductDetail = (productId) => {
+                currentDetailProduct = products.find(p => p.id === productId);
+                if (!currentDetailProduct) return;
+                selectedSize = null;
                 
+                dom.detailProductName.textContent = currentDetailProduct.name;
+                currentImageIndex = 0;
+                renderProductImages();
+                renderDetailActionButtons();
+
+                if (currentDetailProduct.hasSizes) {
+                    dom.detailSizeContainer.innerHTML = `
+                        <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran:</p>
+                        <div id="detail-size-options" class="flex flex-wrap gap-3">
+                            ${currentDetailProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join('')}
+                        </div>
+                    `;
+                    dom.detailProductPrice.textContent = formatCurrency(currentDetailProduct.price) + " (mulai)";
+                } else {
+                    dom.detailSizeContainer.innerHTML = '';
+                    dom.detailProductPrice.textContent = formatCurrency(currentDetailProduct.price);
+                }
+
+                toggleModal(dom.productDetailModal, true);
+                lucide.createIcons();
+            };
+
+            const renderProductImages = () => {
+                dom.mainProductImage.src = currentDetailProduct.detailImages[currentImageIndex];
+                dom.mainProductImage.onerror = () => { dom.mainProductImage.src = 'https://placehold.co/800x800?text=Gambar+Error' };
+                dom.thumbnailContainer.innerHTML = '';
+                currentDetailProduct.detailImages.forEach((imgSrc, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = imgSrc;
+                    thumb.className = `w-16 h-16 object-cover rounded-md cursor-pointer border-2 opacity-60 hover:opacity-100 ${index === currentImageIndex ? 'thumbnail-active' : 'border-transparent'}`;
+                    thumb.onclick = () => {
+                        currentImageIndex = index;
+                        renderProductImages();
+                    };
+                    dom.thumbnailContainer.appendChild(thumb);
+                });
+            };
+
+            const renderDetailActionButtons = () => {
+                if (!currentDetailProduct) return;
+                const itemsInCart = cart.filter(item => item.id === currentDetailProduct.id);
+                const totalInCart = itemsInCart.reduce((sum, item) => sum + item.quantity, 0);
+
+                if (totalInCart > 0 && !currentDetailProduct.hasSizes) {
+                    const item = itemsInCart[0];
+                    dom.detailActionContainer.innerHTML = `<div class="flex items-center justify-center border rounded-lg w-full"><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-6 font-bold text-xl">${item.quantity} di keranjang</span><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div>`;
+                } else {
+                     dom.detailActionContainer.innerHTML = `<button id="add-detail-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
+                        <i data-lucide="shopping-bag"></i>
+                        <span>Tambahkan ke Keranjang</span>
+                    </button>`;
+                }
+                 lucide.createIcons();
+            };
+
+            const startCountdown = () => {
                 clearInterval(countdownInterval);
-                alert('Terima kasih atas pesanan Anda! Pesanan telah dicatat.');
+                let duration = 300;
+                countdownInterval = setInterval(() => {
+                    const minutes = Math.floor(duration / 60).toString().padStart(2, '0');
+                    const seconds = (duration % 60).toString().padStart(2, '0');
+                    dom.countdownTimer.textContent = `${minutes}:${seconds}`;
+                    if (--duration < 0) handlePaymentTimeout();
+                }, 1000);
+            };
+
+            const handlePaymentTimeout = () => {
+                clearInterval(countdownInterval);
+                alert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
+                toggleModal(dom.paymentModal, false);
                 cart = [];
                 customerData = null;
                 dom.customerForm.reset();
-                toggleModal(dom.paymentModal, false);
                 updateUI();
+            };
+            
+            const populateConfirmationPage = (formData) => {
+                dom.orderSummaryItems.innerHTML = cart.map(item => `
+                    <div class="flex justify-between text-sm">
+                        <span>${item.name} ${item.size ? `(${item.size})` : ''} x ${item.quantity}</span>
+                        <span>${formatCurrency(item.finalPrice * item.quantity)}</span>
+                    </div>
+                `).join('');
+                const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
+                dom.orderSummaryTotal.textContent = formatCurrency(total);
+                dom.customerDataSummary.innerHTML = '';
+                customerData = {};
+                formData.forEach((value, key) => {
+                    customerData[key] = value;
+                    dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
+                });
+            };
 
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                alert('Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.');
-            } finally {
-                dom.finishPaymentBtn.disabled = false;
-                dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
-            }
-        };
+            const submitOrder = async () => {
+                if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec") {
+                    alert("URL Google Script belum diatur. Silakan hubungi admin.");
+                    return;
+                }
+                dom.finishPaymentBtn.disabled = true;
+                dom.finishPaymentBtn.textContent = 'Mengirim...';
 
-        // Event Listeners
-        dom.productsGrid.addEventListener('click', e => {
-            const addToCartBtn = e.target.closest('.add-to-cart-btn');
-            const qtyChangeBtn = e.target.closest('.quantity-change-btn');
-            if (addToCartBtn) {
-                const productId = parseInt(addToCartBtn.dataset.productId);
-                products.find(p => p.id === productId).hasSizes ? openSizeSelection(productId) : addToCart(productId);
-            }
-            if (qtyChangeBtn) handleQuantityChangeFromGrid(parseInt(qtyChangeBtn.dataset.productId), parseInt(qtyChangeBtn.dataset.change));
-        });
-        dom.sizeOptionsContainer.addEventListener('click', e => {
-            const sizeBtn = e.target.closest('.select-size-btn');
-            if (sizeBtn) {
-                addToCart(productForSizing.id, sizeBtn.dataset.size);
-                toggleModal(dom.sizeModal, false);
-            }
-        });
-        dom.cartItemsContainer.addEventListener('click', e => {
-            const updateBtn = e.target.closest('.update-cart-quantity-btn');
-            const removeBtn = e.target.closest('.remove-from-cart-btn');
-            if (updateBtn) updateCartQuantity(updateBtn.dataset.cartItemId, parseInt(updateBtn.dataset.change));
-            if (removeBtn) {
-                cart = cart.filter(item => item.cartItemId !== removeBtn.dataset.cartItemId);
-                updateUI();
-            }
-        });
-        dom.openCartBtn.addEventListener('click', () => toggleModal(dom.cartModal, true));
-        dom.checkoutBtn.addEventListener('click', () => {
-            if (cart.length > 0) {
-                toggleModal(dom.cartModal, false);
-                toggleModal(dom.customerDataModal, true);
-            }
-        });
-        dom.customerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            populateConfirmationPage(new FormData(e.target));
-            toggleModal(dom.customerDataModal, false);
-            toggleModal(dom.paymentModal, true);
-            startCountdown();
-        });
-        dom.finishPaymentBtn.addEventListener('click', submitOrder);
-        
-        dom.closeModalBtns.forEach(btn => btn.addEventListener('click', () => {
-            clearInterval(countdownInterval);
-            toggleModal(document.getElementById(btn.dataset.modalId), false);
-        }));
+                const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
+                const simplifiedCartString = cart.map(item => 
+                    `${item.name} (${item.size || 'N/A'}) x${item.quantity}`
+                ).join(", ");
 
-        // Inisialisasi awal saat halaman dimuat
-        updateUI();
+                const orderData = {
+                    customer: customerData,
+                    rincian: simplifiedCartString,
+                    total: total,
+                };
+
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(orderData),
+                        // Headers di-handle oleh browser saat mengirimkan data dari form
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    clearInterval(countdownInterval);
+                    toggleModal(dom.paymentModal, false);
+                    toggleModal(dom.successModal, true);
+
+                    setTimeout(() => {
+                        toggleModal(dom.successModal, false);
+                        cart = [];
+                        customerData = null;
+                        dom.customerForm.reset();
+                        updateUI();
+                    }, 4000);
+
+                } catch (error) {
+                    console.error("Error submitting order: ", error);
+                    alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`);
+                } finally {
+                    dom.finishPaymentBtn.disabled = false;
+                    dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
+                }
+            };
+
+            // Event Listeners
+            dom.productsGrid.addEventListener('click', e => {
+                const productCard = e.target.closest('.product-card');
+                if (productCard) {
+                    const productId = parseInt(productCard.dataset.productId);
+                    openProductDetail(productId);
+                }
+            });
+
+            dom.detailActionContainer.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('#add-detail-to-cart-btn');
+                const quantityBtn = e.target.closest('.detail-quantity-btn');
+
+                if (addBtn) {
+                    if (currentDetailProduct.hasSizes) {
+                        if (selectedSize) {
+                            addToCart(currentDetailProduct.id, selectedSize);
+                            toggleModal(dom.productDetailModal, false);
+                        } else {
+                            alert('Silakan pilih ukuran terlebih dahulu.');
+                        }
+                    } else {
+                        addToCart(currentDetailProduct.id);
+                        toggleModal(dom.productDetailModal, false);
+                    }
+                }
+                if (quantityBtn) {
+                     const cartItemId = quantityBtn.dataset.cartItemId;
+                     const change = parseInt(quantityBtn.dataset.change);
+                     updateCartQuantity(cartItemId, change);
+                }
+            });
+            
+            document.body.addEventListener('click', (e) => {
+                 if (e.target.matches('#detail-size-options .size-btn')) {
+                    document.querySelectorAll('#detail-size-options .size-btn').forEach(btn => btn.classList.remove('bg-indigo-600', 'text-white'));
+                    e.target.classList.add('bg-indigo-600', 'text-white');
+                    selectedSize = e.target.dataset.size;
+                    const price = calculatePrice(currentDetailProduct.price, selectedSize);
+                    dom.detailProductPrice.textContent = formatCurrency(price);
+                 }
+            });
+
+            dom.prevImageBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + currentDetailProduct.detailImages.length) % currentDetailProduct.detailImages.length;
+                renderProductImages();
+            });
+
+            dom.nextImageBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % currentDetailProduct.detailImages.length;
+                renderProductImages();
+            });
+
+            dom.cartItemsContainer.addEventListener('click', e => {
+                const updateBtn = e.target.closest('.update-cart-quantity-btn');
+                const removeBtn = e.target.closest('.remove-from-cart-btn');
+                if (updateBtn) updateCartQuantity(updateBtn.dataset.cartItemId, parseInt(updateBtn.dataset.change));
+                if (removeBtn) {
+                    cart = cart.filter(item => item.cartItemId !== removeBtn.dataset.cartItemId);
+                    updateUI();
+                }
+            });
+            dom.openCartBtn.addEventListener('click', () => toggleModal(dom.cartModal, true));
+            dom.checkoutBtn.addEventListener('click', () => {
+                if (cart.length > 0) {
+                    toggleModal(dom.cartModal, false);
+                    toggleModal(dom.customerDataModal, true);
+                }
+            });
+            dom.customerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                populateConfirmationPage(new FormData(e.target));
+                toggleModal(dom.customerDataModal, false);
+                toggleModal(dom.paymentModal, true);
+                startCountdown();
+            });
+            dom.finishPaymentBtn.addEventListener('click', submitOrder);
+            
+            dom.closeModalBtns.forEach(btn => btn.addEventListener('click', () => {
+                clearInterval(countdownInterval);
+                toggleModal(document.getElementById(btn.dataset.modalId), false);
+            }));
+
+            // Inisialisasi awal saat halaman dimuat
+            updateUI();
+        });
     </script>
 </body>
 </html>
