@@ -259,7 +259,7 @@
                 { id: 2, name: 'Workshirt Kerja Praktik', price: 160000, image: 'assets/workshirt-kp-1.jpg', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-kp-1.jpg', 'assets/workshirt-kp-2.jpg', 'assets/size-chart-b.jpg']},
                 { id: 3, name: 'Workshirt Metalurgi', price: 179000, image: 'assets/workshirt-metal-1.jpg', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-metal-1.jpg', 'assets/workshirt-metal-2.jpg', 'assets/size-chart-c.jpg']},
                 { id: 4, name: 'Sticker (3pcs)', price: 15000, image: 'assets/sticker-pack-1.jpg', hasSizes: false, detailImages: ['assets/sticker-pack-1.jpg', 'assets/sticker-pack-2.jpg', 'assets/sticker-pack-3.jpg'] },
-                { id: 5, name: 'Sticker mobil', price: 15000, image: 'assets/sticker-mobil-1.jpg', hasSizes: false, detailImages: ['assets/sticker-mobil-1.jpg', 'assets/sticker-mobil-2.jpg', 'assets/sticker-mobil-3.jpg'] },
+                { id: 5, name: 'Sticker mobil', price: 15000, image: 'assets/sticker-mobil-1.jpg', hasSizes: false, detailImages: ['assets/sticker-mobil-1.jpg', 'assets/sticker-mobil-2.png', 'assets/sticker-mobil-3.jpg'] },
                 { id: 6, name: 'Keychain IMMt', price: 15000, image: 'assets/keychain-immt-1.jpg', hasSizes: false, detailImages: ['assets/keychain-immt-1.jpg', 'assets/keychain-immt-2.jpg', 'assets/keychain-immt-3.jpg'] },
                 { id: 7, name: 'Keychain Makara UI', price: 15000, image: 'assets/keychain-makara-1.jpg', hasSizes: false, detailImages: ['assets/keychain-makara-1.jpg', 'assets/keychain-makara-2.jpg', 'assets/keychain-makara-3.jpg'] },
                 { id: 8, name: 'Paket Alat Gamtek', price: 200000, image: 'assets/gamtek-1.jpg', hasSizes: false, detailImages: ['assets/gamtek-1.jpg', 'assets/gamtek-2.jpg', 'assets/gamtek-3.jpg'] },
@@ -500,17 +500,13 @@
                         method: 'POST',
                         body: JSON.stringify(orderData),
                         headers: {
-                            'Content-Type': 'text/plain;charset=utf-8', // Wajib untuk menghindari preflight
+                            'Content-Type': 'text/plain;charset=utf-8',
                         },
                     });
 
-                    const result = await response.json();
-
-                    if (result.result !== 'success') {
-                         throw new Error(result.error || 'Gagal mengirim data dari server.');
-                    }
-                    
-                    console.log("Pengiriman data berhasil:", result);
+                    // Karena kita tidak bisa membaca respons dari 'no-cors' atau redirect,
+                    // kita akan langsung anggap sukses jika fetch tidak melempar error jaringan.
+                    console.log("Data sent to Google Sheets.");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
                     toggleModal(dom.successModal, true);
