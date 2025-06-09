@@ -499,12 +499,12 @@
                 formData.append('data', JSON.stringify(orderData));
 
                 try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
                         body: formData
                     });
-                    
-                    // Asumsikan sukses jika tidak ada error jaringan.
+
+                    // Anggap sukses jika fetch tidak melempar error, karena redirect akan menyebabkan 'opaque' response
                     console.log("Data sent to Google Sheets (assumed success).");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
@@ -520,7 +520,7 @@
 
                 } catch (error) {
                     console.error("Error submitting order:", error);
-                    alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
+                     alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
                 } finally {
                     dom.finishPaymentBtn.disabled = false;
                     dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
