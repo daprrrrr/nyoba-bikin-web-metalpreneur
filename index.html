@@ -579,7 +579,8 @@
             };
 
             const submitOrder = () => {
-                if (GOOGLE_SCRIPT_URL === placeholderUrl || !GOOGLE_SCRIPT_URL) {
+                const url = GOOGLE_SCRIPT_URL;
+                if (url === placeholderUrl || url === "") {
                     alert("URL Google Script belum diatur. Silakan hubungi admin.");
                     return;
                 }
