@@ -253,19 +253,15 @@
     <!-- SCRIPT UTAMA WEBSITE -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // =====================================================================
-            // PENTING: PASTE KUNCI KONFIGURASI FIREBASE ANDA DI SINI
-            // =====================================================================
-             const firebaseConfig = {
+            // Kunci Konfigurasi Firebase Anda
+            const firebaseConfig = {
                 apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
                 authDomain: "database-immt-shop-2.firebaseapp.com",
                 projectId: "database-immt-shop-2",
-                storageBucket: "database-immt-shop-2.firebasestorage.app",
+                storageBucket: "database-immt-shop-2.appspot.com",
                 messagingSenderId: "490881653909",
-                appId: "1:490881653909:web:f61209d5a3a38be3260f9c",
-                measurementId: "G-Q3H1S79G2Z"
+                appId: "1:490881653909:web:f61209d5a3a38be3260f9c"
             };
-            // =====================================================================
 
             // Inisialisasi Firebase menggunakan namespace global
             firebase.initializeApp(firebaseConfig);
@@ -492,24 +488,22 @@
             };
 
             const submitOrder = async () => {
-                const placeholder = "GANTI_DENGAN_URL_WEB_APP_ANDA";
-                if (GOOGLE_SCRIPT_URL === placeholder || !GOOGLE_SCRIPT_URL) {
-                    alert("URL Google Script belum diatur. Silakan hubungi admin.");
-                    return;
-                }
-
                 dom.finishPaymentBtn.disabled = true;
                 dom.finishPaymentBtn.textContent = 'Mengirim...';
 
                 const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
-                const simplifiedCartString = cart.map(item => 
-                    `${item.name} (${item.size || 'N/A'}) x${item.quantity}`
-                ).join(", ");
+                const simplifiedCart = cart.map(item => ({
+                    name: item.name,
+                    size: item.size || 'N/A',
+                    quantity: item.quantity,
+                    price: item.finalPrice
+                }));
 
                 const orderData = {
                     customer: customerData,
-                    rincian: simplifiedCartString,
-                    total: total,
+                    items: simplifiedCart,
+                    totalAmount: total,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
                 try {
