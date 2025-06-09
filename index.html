@@ -74,7 +74,6 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 <a href="#" class="flex items-center gap-3">
-                    <!-- PENTING: Ganti 'src' di bawah ini dengan path ke file logo Anda -->
                     <img src="assets/logo.jpg" alt="Logo IMMt Shop" class="h-12 w-12 rounded-full object-cover" onerror="this.style.display='none'">
                     <span class="text-xl font-bold text-gray-900">IMMt SHOP</span>
                 </a>
@@ -174,29 +173,34 @@
                         <span>Batas Waktu Pembayaran:</span>
                         <span id="countdown-timer" class="text-2xl font-mono ml-2">05:00</span>
                     </div>
-                    <button id="finish-payment-btn" class="w-full max-w-xs mt-4 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Saya Sudah Membayar</button>
+                    <button id="finish-payment-btn" class="w-full max-w-xs mt-4 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 disabled:opacity-50">Saya Sudah Membayar</button>
                 </div>
             </div>
         </div>
     </div>
 
-     <script type="module">
+    <!-- SCRIPT UTAMA WEBSITE (TIPE MODULE) -->
+    <script type="module">
+        // Import fungsi-fungsi yang dibutuhkan dari SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore.js";
         
+        // Kunci Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
             authDomain: "database-immt-shop-2.firebaseapp.com",
             projectId: "database-immt-shop-2",
-            storageBucket: "database-immt-shop-2.firebasestorage.app",
+            storageBucket: "database-immt-shop-2.appspot.com", // Pastikan berakhiran .appspot.com
             messagingSenderId: "490881653909",
-            appId: "1:490881653909:web:f61209d5a3a38be3260f9c",
-            measurementId: "G-Q3H1S79G2Z"
+            appId: "1:490881653909:web:f61209d5a3a38be3260f9c"
+            // measurementId opsional, bisa dihapus jika tidak ada
         };
 
         // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // -- Kode Logika Website Dimulai Di Sini --
 
         const products = [
             { id: 1, name: 'Produk Premium A', price: 250000, image: 'https://placehold.co/600x600/3498db/ffffff?text=A', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'] },
@@ -211,6 +215,7 @@
         let cart = [];
         let productForSizing = null;
         let countdownInterval = null;
+        let customerData = null;
 
         const dom = {
             productsGrid: document.getElementById('products-grid'),
@@ -328,6 +333,7 @@
             alert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
             toggleModal(dom.paymentModal, false);
             cart = [];
+            customerData = null;
             dom.customerForm.reset();
             updateUI();
         };
@@ -342,9 +348,51 @@
             const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
             dom.orderSummaryTotal.textContent = formatCurrency(total);
             dom.customerDataSummary.innerHTML = '';
+            customerData = {};
             formData.forEach((value, key) => {
+                customerData[key] = value;
                 dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
             });
+        };
+
+        const submitOrder = async () => {
+            dom.finishPaymentBtn.disabled = true;
+            dom.finishPaymentBtn.textContent = 'Mengirim...';
+
+            const total = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
+            const simplifiedCart = cart.map(item => ({
+                name: item.name,
+                size: item.size || 'N/A',
+                quantity: item.quantity,
+                price: item.finalPrice
+            }));
+
+            const orderData = {
+                customer: customerData,
+                items: simplifiedCart,
+                totalAmount: total,
+                createdAt: serverTimestamp() // Menambahkan waktu server saat pesanan dibuat
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, "orders"), orderData);
+                console.log("Document written with ID: ", docRef.id);
+                
+                clearInterval(countdownInterval);
+                alert('Terima kasih atas pesanan Anda! Pesanan telah dicatat.');
+                cart = [];
+                customerData = null;
+                dom.customerForm.reset();
+                toggleModal(dom.paymentModal, false);
+                updateUI();
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert('Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.');
+            } finally {
+                dom.finishPaymentBtn.disabled = false;
+                dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
+            }
         };
 
         // Event Listeners
@@ -387,21 +435,15 @@
             toggleModal(dom.paymentModal, true);
             startCountdown();
         });
-        dom.finishPaymentBtn.addEventListener('click', () => {
-             clearInterval(countdownInterval);
-             alert('Terima kasih atas pesanan Anda! Pesanan akan segera kami proses setelah konfirmasi pembayaran.');
-             cart = [];
-             dom.customerForm.reset();
-             toggleModal(dom.paymentModal, false);
-             updateUI();
-        });
+        dom.finishPaymentBtn.addEventListener('click', submitOrder);
+        
         dom.closeModalBtns.forEach(btn => btn.addEventListener('click', () => {
             clearInterval(countdownInterval);
             toggleModal(document.getElementById(btn.dataset.modalId), false);
         }));
 
+        // Inisialisasi awal saat halaman dimuat
         updateUI();
-    });
     </script>
 </body>
 </html>
