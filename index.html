@@ -252,6 +252,7 @@
             // PENTING: PASTE URL WEB APP ANDA DARI GOOGLE SCRIPT DI SINI
             // =====================================================================
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec";
+            const placeholderUrl = "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec";
             // =====================================================================
             
             // =====================================================================
@@ -578,8 +579,7 @@
             };
 
             const submitOrder = () => {
-                const url = GOOGLE_SCRIPT_URL;
-                if (url === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec" || !url) {
+                if (GOOGLE_SCRIPT_URL === placeholderUrl || !GOOGLE_SCRIPT_URL) {
                     alert("URL Google Script belum diatur. Silakan hubungi admin.");
                     return;
                 }
