@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Preneur - Membangun Bisnis dari Nol</title>
+    <!-- Chosen Palette: Earthy Startup -->
+    <!-- Application Structure Plan: Aplikasi ini dirancang sebagai SPA (Single Page Application) dengan navigasi vertikal yang memandu pengguna melalui alur logis memulai bisnis. Struktur ini dipilih agar lebih intuitif daripada format slide-per-slide, memungkinkan pengguna menjelajahi konten secara bebas atau berurutan. Alurnya adalah: (1) Motivasi awal, (2) Membongkar mitos umum dengan kartu interaktif, (3) Panduan langkah-demi-langkah menggunakan sistem tab yang rapi, (4) Fitur utama: Kalkulator Bisnis Interaktif untuk menerapkan konsep keuangan secara langsung, (5) Galeri alat bantu, dan (6) Penguatan mental sebagai penutup. Struktur ini mengutamakan pengalaman belajar aktif dan praktis, bukan konsumsi pasif. -->
+    <!-- Visualization & Content Choices: 
+        - Mitos vs Fakta (Inform): Menggunakan kartu interaktif (HTML/CSS/JS) di mana "fakta" tersembunyi dan muncul saat diklik, ini lebih menarik daripada daftar statis.
+        - Langkah Memulai (Organize): Menggunakan sistem Tab (HTML/CSS/JS) untuk menyajikan 5 langkah utama. Ini menjaga antarmuka tetap bersih dan terorganisir, memungkinkan pengguna fokus pada satu langkah pada satu waktu.
+        - Kalkulator Bisnis (Relate/Compare): Kombinasi input HTML dan visualisasi data menggunakan Chart.js (Doughnut Chart). Tujuannya adalah agar pengguna dapat secara aktif memasukkan angka mereka sendiri dan langsung melihat visualisasi perbandingan antara Harga Pokok Penjualan (HPP) dan Potensi Keuntungan. Ini adalah cara paling efektif untuk mengajarkan konsep RAB dan penetapan harga.
+        - Tools & Mental Preneur (Inform): Menggunakan layout grid (Tailwind) untuk menampilkan kartu informasi. Visual, rapi, dan mudah dipindai.
+        - Library/Method: Vanilla JS untuk semua interaktivitas, Chart.js untuk visualisasi data, Tailwind CSS untuk styling.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-active {
+            background-color: #A36B53;
+            color: #FFFFFF;
+        }
+        .tab-inactive {
+            background-color: #EFEAE6;
+            color: #A36B53;
+        }
+        .mitos-card .mitos-text {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .mitos-card.active .mitos-text {
+            max-height: 200px; /* Adjust as needed */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl md:text-2xl font-extrabold text-[#A36B53]">METAL PRENEUR by Keuangan IMMt FTUI 2025</a>
+            <div class="hidden md:flex space-x-6 text-sm font-semibold">
+                <a href="#langkah" class="hover:text-[#A36B53] transition-colors">Langkah Awal</a>
+                <a href="#kalkulator" class="hover:text-[#A36B53] transition-colors">Kalkulator Bisnis</a>
+                <a href="#tools" class="hover:text-[#A36B53] transition-colors">Tools</a>
+                <a href="#mental" class="hover:text-[#A36B53] transition-colors">Mental Preneur</a>
+            </div>
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-2xl text-[#A36B53] focus:outline-none">☰</button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white py-4 px-6">
+             <a href="#langkah" class="block py-2 hover:text-[#A36B53] transition-colors mobile-link">Langkah Awal</a>
+             <a href="#kalkulator" class="block py-2 hover:text-[#A36B53] transition-colors mobile-link">Kalkulator Bisnis</a>
+             <a href="#tools" class="block py-2 hover:text-[#A36B53] transition-colors mobile-link">Tools</a>
+             <a href="#mental" class="block py-2 hover:text-[#A36B53] transition-colors mobile-link">Mental Preneur</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+
+        <section class="text-center mb-16 md:mb-24">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-4">Dari <span class="text-[#A36B53]">Ide</span> Jadi <span class="text-[#A36B53]">Cuan</span>.</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl text-gray-600 mb-8">Selamat datang di Metal Preneur! Masa kuliah adalah 'gym' terbaik untuk melatih otot bisnismu. Mari kita bongkar mitos dan bangun bisnismu dari nol, langkah demi langkah.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <p class="text-2xl mb-1">💡</p>
+                    <h3 class="font-bold">Pengalaman Langka</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <p class="text-2xl mb-1">🤝</p>
+                    <h3 class="font-bold">Bangun Jaringan</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <p class="text-2xl mb-1">💸</p>
+                    <h3 class="font-bold">Mandiri Finansial</h3>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <p class="text-2xl mb-1">🚀</p>
+                    <h3 class="font-bold">Portofolio Nyata</h3>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold">"Mau Mulai Bisnis, Tapi..."</h2>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Sering dengar ini? Klik setiap kartu untuk membongkar mitos yang sering menghalangi langkah pertamamu.</p>
+            </div>
+            <div id="mitos-container" class="grid md:grid-cols-3 gap-8">
+                <div class="mitos-card bg-white p-6 rounded-xl shadow-lg border border-gray-100 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <h3 class="font-bold text-xl mb-2 text-[#A36B53]">MITOS: Butuh Modal Besar</h3>
+                    <p class="mitos-text text-gray-700 pt-2">FAKTA: Bisnis bisa dimulai dengan modal kreativitas. Jadi reseller, buka jasa, atau manfaatkan skill yang sudah ada. Yang utama bukan uang, tapi kemauan.</p>
+                </div>
+                 <div class="mitos-card bg-white p-6 rounded-xl shadow-lg border border-gray-100 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <h3 class="font-bold text-xl mb-2 text-[#A36B53]">MITOS: Tidak Punya Bakat Dagang</h3>
+                    <p class="mitos-text text-gray-700 pt-2">FAKTA: Berwirausaha adalah skill yang bisa dipelajari, bukan bakat lahir. Semua dimulai dari kemauan untuk mencoba dan belajar dari kesalahan.</p>
+                </div>
+                 <div class="mitos-card bg-white p-6 rounded-xl shadow-lg border border-gray-100 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <h3 class="font-bold text-xl mb-2 text-[#A36B53]">MITOS: Akan Mengganggu Kuliah</h3>
+                    <p class="mitos-text text-gray-700 pt-2">FAKTA: Justru ini adalah latihan manajemen waktu terbaik. Kuncinya adalah menentukan prioritas, disiplin, dan tidak menunda-nunda pekerjaan.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="langkah" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold">Panduan Memulai Bisnis</h2>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Ikuti 5 langkah utama ini untuk mengubah idemu menjadi bisnis yang nyata. Klik setiap langkah untuk melihat detailnya.</p>
+            </div>
+            <div>
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8">
+                    <button data-tab="1" class="tab-btn tab-active px-4 py-2 rounded-full font-semibold transition-all duration-300">1. Temukan Ide</button>
+                    <button data-tab="2" class="tab-btn tab-inactive px-4 py-2 rounded-full font-semibold transition-all duration-300">2. Target Pasar</button>
+                    <button data-tab="3" class="tab-btn tab-inactive px-4 py-2 rounded-full font-semibold transition-all duration-300">3. Rencanakan Biaya</button>
+                    <button data-tab="4" class="tab-btn tab-inactive px-4 py-2 rounded-full font-semibold transition-all duration-300">4. Tetapkan Harga</button>
+                    <button data-tab="5" class="tab-btn tab-inactive px-4 py-2 rounded-full font-semibold transition-all duration-300">5. Mulai Aksi!</button>
+                </div>
+                <div id="tab-content" class="bg-white p-6 md:p-10 rounded-2xl shadow-lg border border-gray-100 min-h-[300px] flex items-center">
+                    <div data-content="1" class="tab-pane w-full">
+                        <h3 class="font-bold text-2xl mb-4 text-[#A36B53]">Langkah 1: Menemukan IDE EMAS</h3>
+                        <p class="mb-4">Ide bisnis terbaik seringkali datang dari hal-hal di sekitar kita. Tidak perlu rumit, yang penting solutif. Coba 3 cara ini:</p>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700">
+                            <li><span class="font-semibold">Amati Masalah:</span> Apa keluhan teman-temanmu di kampus? Makanan mahal? Susah print tugas? Jadikan keluhan itu sebagai peluang bisnismu.</li>
+                            <li><span class="font-semibold">Ubah Hobi Jadi Uang:</span> Suka masak, desain, atau main game? Semua itu bisa jadi sumber penghasilan. Tawarkan keahlianmu sebagai jasa atau produk.</li>
+                            <li><span class="font-semibold">Lihat Tren:</span> Apa yang sedang viral di media sosial? Coba adaptasi tren tersebut menjadi produk yang sesuai dengan pasar mahasiswa.</li>
+                        </ul>
+                    </div>
+                    <div data-content="2" class="tab-pane hidden w-full">
+                         <h3 class="font-bold text-2xl mb-4 text-[#A36B53]">Langkah 2: Menentukan TARGET PASAR</h3>
+                         <p class="mb-4">"Jika kamu menjual untuk semua orang, kamu tidak menjual untuk siapapun". Kenali calon pelangganmu agar promosimu tepat sasaran. Jawab pertanyaan ini:</p>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700">
+                             <li><span class="font-semibold">Siapa Mereka? (Demografi):</span> Apa jurusan mereka, angkatan berapa, anak kos atau bukan?</li>
+                             <li><span class="font-semibold">Apa Kebiasaan Mereka? (Psikografi):</span> Dimana mereka suka nongkrong, media sosial apa yang paling sering dipakai, apa masalah utama mereka sebagai mahasiswa?</li>
+                             <li><span class="font-semibold">Di Mana Mereka Berkumpul?:</span> Apakah di kantin, perpustakaan, UKM tertentu, atau grup WhatsApp angkatan? Di situlah kamu harus hadir.</li>
+                         </ul>
+                    </div>
+                    <div data-content="3" class="tab-pane hidden w-full">
+                        <h3 class="font-bold text-2xl mb-4 text-[#A36B53]">Langkah 3: Peta Keuangan Bisnis (RAB)</h3>
+                        <p class="mb-4">Rencana Anggaran Biaya (RAB) adalah peta agar bisnismu tidak rugi. Ada dua jenis biaya utama yang harus kamu ketahui:</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold text-lg">1. Modal Awal (Biaya Investasi)</h4>
+                                <p class="text-gray-700">Biaya yang hanya dikeluarkan <span class="font-bold">sekali di awal</span> untuk membeli aset/peralatan. Contoh: blender, laptop, setrika, kamera.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg">2. Biaya Operasional (Harga Pokok)</h4>
+                                <p class="text-gray-700">Biaya yang dikeluarkan <span class="font-bold">berulang kali</span> setiap kali kamu memproduksi barang/jasa. Contoh: bahan baku, kuota internet, biaya cetak, kemasan.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-content="4" class="tab-pane hidden w-full">
+                        <h3 class="font-bold text-2xl mb-4 text-[#A36B53]">Langkah 4: Strategi Menentukan Harga</h3>
+                        <p class="mb-4">Setelah tahu biayanya, saatnya menentukan harga jual. Jangan asal! Gunakan strategi ini:</p>
+                        <ul class="space-y-3 text-gray-700">
+                             <li><span class="font-semibold block">1. Hitung HPP (Harga Pokok Penjualan):</span><p class="text-sm">`Total Biaya Operasional / Jumlah Produk`. Ini adalah harga modal per produk.</p></li>
+                             <li><span class="font-semibold block">2. Cost-Plus Pricing (Dasar):</span><p class="text-sm">`HPP + Margin Keuntungan`. Tentukan berapa untung yang kamu mau, lalu tambahkan ke HPP.</p></li>
+                             <li><span class="font-semibold block">3. Competitor-Based Pricing (Intip Tetangga):</span><p class="text-sm">Lihat harga kompetitor. Bisakah kamu bersaing dengan harga lebih murah, atau tawarkan nilai lebih dengan harga sedikit lebih mahal?</p></li>
+                             <li><span class="font-semibold block">4. Value-Based Pricing (Jual Nilai):</span><p class="text-sm">Fokus pada manfaat yang didapat pelanggan, bukan hanya biaya. Cocok untuk produk jasa, custom, atau yang punya nilai unik.</p></li>
+                         </ul>
+                    </div>
+                    <div data-content="5" class="tab-pane hidden w-full">
+                        <h3 class="font-bold text-2xl mb-4 text-[#A36B53]">Langkah 5: Mulai Aksi!</h3>
+                        <p class="mb-4">Jangan menunggu sempurna, karena itu tidak akan pernah datang. Mulailah dengan konsep <span class="font-bold">MVP (Minimum Viable Product)</span>, yaitu versi paling sederhana dari produkmu yang sudah layak jual.</p>
+                        <p class="mb-4">Tujuannya adalah untuk tes pasar, bukan langsung cari untung besar. Dapatkan feedback dari pelanggan pertamamu untuk perbaikan.</p>
+                        <div class="bg-[#EFEAE6] p-4 rounded-lg">
+                            <h4 class="font-bold">Tantangan Minggu Ini:</h4>
+                            <ul class="list-disc list-inside mt-2">
+                                <li>Tawarkan produk/jasamu ke 3-5 teman terdekat.</li>
+                                <li>Minta testimoni jujur dari mereka.</li>
+                                <li>Posting produkmu di status WhatsApp atau Instagram Story.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="kalkulator" class="mb-16 md:mb-24 bg-white p-6 md:p-10 rounded-2xl shadow-xl border border-gray-100">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold">Kalkulator Bisnis Interaktif</h2>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Masih bingung menghitung harga? Coba simulasikan bisnismu di sini. Masukkan angkanya dan lihat hasilnya secara langsung!</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+                <div class="space-y-4">
+                    <div>
+                        <label for="biaya-operasional" class="font-semibold block mb-1">Total Biaya Operasional (Rp)</label>
+                        <input type="number" id="biaya-operasional" placeholder="Contoh: 90000" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A36B53] focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label for="jumlah-produk" class="font-semibold block mb-1">Jumlah Produk / Porsi</label>
+                        <input type="number" id="jumlah-produk" placeholder="Contoh: 20" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A36B53] focus:border-transparent transition">
+                    </div>
+                    <div>
+                        <label for="margin-keuntungan" class="font-semibold block mb-1">Margin Keuntungan per Produk (Rp)</label>
+                        <input type="number" id="margin-keuntungan" placeholder="Contoh: 3500" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#A36B53] focus:border-transparent transition">
+                    </div>
+                     <button id="hitung-btn" class="w-full bg-[#A36B53] text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition-all">Hitung Harga Jual</button>
+                </div>
+                <div class="text-center">
+                    <div id="chart-wrapper" class="chart-container">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                    <div id="hasil-kalkulator" class="mt-4 text-left p-4 bg-gray-50 rounded-lg">
+                        <p class="font-semibold text-gray-500">Hasil Perhitungan:</p>
+                        <p>Harga Pokok Penjualan (HPP): <span id="hpp-result" class="font-bold text-lg text-[#A36B53]">Rp 0</span></p>
+                        <p>Harga Jual per Produk: <span id="harga-jual-result" class="font-bold text-lg text-[#A36B53]">Rp 0</span></p>
+                        <p>Total Potensi Keuntungan: <span id="total-profit-result" class="font-bold text-lg text-green-600">Rp 0</span></p>
+                         <p id="kalkulator-error" class="text-red-500 text-sm mt-2"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tools" class="mb-16 md:mb-24">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold">Jurus Anti Boncos & Tools Andalan</h2>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">Kelola keuanganmu dengan benar dan manfaatkan alat gratis ini untuk melesatkan bisnismu.</p>
+            </div>
+             <div class="grid md:grid-cols-2 gap-8">
+                 <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                     <h3 class="font-bold text-xl mb-4 text-[#A36B53]">3 Aturan Keuangan Wajib</h3>
+                     <ul class="space-y-3">
+                         <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><span class="font-semibold">Pisahkan Uang:</span> Jangan campur aduk uang bisnis dan pribadi. Buat rekening atau e-wallet terpisah.</span></li>
+                         <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><span class="font-semibold">Catat Semua:</span> Sekecil apapun transaksi, catat! Ini kunci untuk tahu bisnismu untung atau rugi.</span></li>
+                         <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><span class="font-semibold">Putar Keuntungan (Re-invest):</span> Sisihkan sebagian profit untuk mengembangkan bisnismu, jangan dihabiskan semua.</span></li>
+                     </ul>
+                 </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                     <h3 class="font-bold text-xl mb-4 text-[#A36B53]">Peralatan Perang Digital (Gratis!)</h3>
+                     <ul class="space-y-3">
+                        <li><span class="font-semibold">Pencatatan Keuangan:</span> Google Sheets, BukuWarung, Credibook.</li>
+                        <li><span class="font-semibold">Desain & Promosi:</span> Canva, Capcut (untuk video).</li>
+                        <li><span class="font-semibold">Manajemen & Komunikasi:</span> WhatsApp Business, Trello, Notion.</li>
+                     </ul>
+                 </div>
+             </div>
+        </section>
+
+        <section id="mental" class="text-center bg-[#A36B53] text-white p-8 md:p-12 rounded-2xl">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ini Bukan Sprint, Ini Maraton.</h2>
+            <p class="max-w-2xl mx-auto mb-8">Menjadi pengusaha adalah perjalanan panjang. Kamu butuh mental yang tepat untuk bertahan dan bertumbuh.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                <div class="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                    <h3 class="text-4xl font-extrabold">K</h3>
+                    <p class="font-semibold">Konsisten</p>
+                </div>
+                 <div class="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                    <h3 class="text-4xl font-extrabold">K</h3>
+                    <p class="font-semibold">Kreatif</p>
+                </div>
+                 <div class="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                    <h3 class="text-4xl font-extrabold">K</h3>
+                    <p class="font-semibold">Kuat</p>
+                </div>
+                 <div class="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
+                    <h3 class="text-4xl font-extrabold">K</h3>
+                    <p class="font-semibold">Kepo</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="text-center py-8 mt-8 border-t border-gray-200">
+        <p class="font-bold text-lg text-[#A36B53]">METAL PRENEUR</p>
+        <p class="text-sm text-gray-500">Dipersembahkan oleh Bidang Keuangan IMMT FTUI 2025</p>
+        <p class="text-sm text-gray-500 mt-2">Ide terbaik adalah ide yang dieksekusi. Your future starts now!</p>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+    
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+        });
+    });
+
+    const mitosCards = document.querySelectorAll('.mitos-card');
+    mitosCards.forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('active');
+        });
+    });
+
+    const tabs = document.querySelectorAll('.tab-btn');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(item => {
+                item.classList.remove('tab-active');
+                item.classList.add('tab-inactive');
+            });
+            tab.classList.add('tab-active');
+            tab.classList.remove('tab-inactive');
+
+            const target = tab.getAttribute('data-tab');
+            tabPanes.forEach(pane => {
+                if (pane.getAttribute('data-content') === target) {
+                    pane.classList.remove('hidden');
+                } else {
+                    pane.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    const hitungBtn = document.getElementById('hitung-btn');
+    const biayaOperasionalInput = document.getElementById('biaya-operasional');
+    const jumlahProdukInput = document.getElementById('jumlah-produk');
+    const marginKeuntunganInput = document.getElementById('margin-keuntungan');
+    const hppResult = document.getElementById('hpp-result');
+    const hargaJualResult = document.getElementById('harga-jual-result');
+    const totalProfitResult = document.getElementById('total-profit-result');
+    const errorMsg = document.getElementById('kalkulator-error');
+    
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    let priceChart;
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    }
+
+    function createOrUpdateChart(hpp = 0, profit = 0) {
+        if (priceChart) {
+            priceChart.destroy();
+        }
+
+        priceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Harga Pokok (HPP)', 'Keuntungan'],
+                datasets: [{
+                    label: 'Komposisi Harga Jual',
+                    data: [hpp, profit],
+                    backgroundColor: [
+                        '#EFEAE6',
+                        '#A36B53'
+                    ],
+                    borderColor: [
+                        '#EFEAE6',
+                        '#A36B53'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += formatRupiah(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    createOrUpdateChart();
+
+    hitungBtn.addEventListener('click', () => {
+        const biaya = parseFloat(biayaOperasionalInput.value);
+        const jumlah = parseFloat(jumlahProdukInput.value);
+        const margin = parseFloat(marginKeuntunganInput.value);
+
+        errorMsg.textContent = '';
+
+        if (isNaN(biaya) || isNaN(jumlah) || isNaN(margin) || biaya <= 0 || jumlah <= 0 || margin < 0) {
+            errorMsg.textContent = 'Harap isi semua kolom dengan angka yang valid.';
+            createOrUpdateChart(0, 0);
+            hppResult.textContent = formatRupiah(0);
+            hargaJualResult.textContent = formatRupiah(0);
+            totalProfitResult.textContent = formatRupiah(0);
+            return;
+        }
+
+        const hpp = biaya / jumlah;
+        const hargaJual = hpp + margin;
+        const totalProfit = margin * jumlah;
+
+        hppResult.textContent = formatRupiah(hpp);
+        hargaJualResult.textContent = formatRupiah(hargaJual);
+        totalProfitResult.textContent = formatRupiah(totalProfit);
+
+        createOrUpdateChart(hpp, margin);
+    });
+});
+</script>
+
+</body>
+</html>
