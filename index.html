@@ -245,6 +245,50 @@
         </div>
     </div>
 
+     <script>
+    document.getElementById('customer-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Ambil data dari form
+        const form = e.target;
+        const nama = form.Nama.value;
+        const kontak = form.Kontak.value;
+        const angkatan = form.Angkatan.value;
+        const pengiriman = form.Pengiriman.value;
+
+        // Siapkan data untuk dikirim
+        const data = {
+            Nama: nama,
+            Kontak: kontak,
+            Angkatan: angkatan,
+            Pengiriman: pengiriman
+        };
+
+        // Ganti dengan URL Google Apps Script Anda
+        const scriptURL = 'https://script.google.com/macros/s/AKfycby8HulVwCM6wnmRF6Xvezlgy8vFt-Mlm7Kq_9G47I7lslKhiT5HbkzuaxKz4au5vAEGrg/exec';
+
+        try {
+            const response = await fetch(scriptURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if(result.result === "success") {
+                // Tampilkan modal sukses, atau redirect, dsb.
+                alert('Pesanan berhasil dikirim!');
+            } else {
+                alert('Gagal mengirim pesanan. Silakan coba lagi.');
+            }
+        } catch (error) {
+            alert('Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi.');
+        }
+    });
+    </script>
+
     <!-- SCRIPT UTAMA WEBSITE -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
