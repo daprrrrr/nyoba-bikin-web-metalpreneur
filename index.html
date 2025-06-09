@@ -473,9 +473,9 @@
                 });
             };
 
-            const submitOrder = async () => {
+            const submitOrder = () => {
                 const url = GOOGLE_SCRIPT_URL;
-                if (url === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec" || url === "") {
+                if (url === "GANTI_DENGAN_URL_WEB_APP_ANDA" || !url) {
                     alert("URL Google Script belum diatur. Silakan hubungi admin.");
                     return;
                 }
@@ -493,21 +493,15 @@
                     rincian: simplifiedCartString,
                     total: total,
                 };
-                
-                const formData = new FormData();
-                formData.append('data', JSON.stringify(orderData));
 
-
-                try {
-                    // Menggunakan metode pengiriman yang lebih sederhana untuk menghindari masalah CORS
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        body: JSON.stringify(orderData),
-                        mode: 'no-cors' // Penting untuk menghindari error CORS saat mengirim ke Google Script
-                    });
-                    
-                    console.log("Request sent. Google Script will handle it.");
-                    
+                fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors', // Mode no-cors seringkali lebih berhasil dengan Google Scripts
+                    body: JSON.stringify(orderData),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(() => {
+                    console.log("Data sent to Google Sheets (response not readable due to no-cors mode).");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
                     toggleModal(dom.successModal, true);
@@ -519,14 +513,15 @@
                         dom.customerForm.reset();
                         updateUI();
                     }, 4000);
-
-                } catch (error) {
+                })
+                .catch(error => {
                     console.error("Error submitting order: ", error);
                     alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
-                } finally {
+                })
+                .finally(() => {
                     dom.finishPaymentBtn.disabled = false;
                     dom.finishPaymentBtn.textContent = 'Saya Sudah Membayar';
-                }
+                });
             };
 
             // Event Listeners
