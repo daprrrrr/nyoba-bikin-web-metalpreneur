@@ -17,6 +17,11 @@
     <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Memuat Firebase SDKs (Versi Kompatibilitas untuk Namespace Global) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+
+
     <!-- Style kustom untuk meningkatkan tampilan -->
     <style>
         body {
@@ -249,11 +254,23 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // =====================================================================
-            // PENTING: PASTE URL WEB APP ANDA DARI GOOGLE SCRIPT DI SINI
+            // PENTING: PASTE KUNCI KONFIGURASI FIREBASE ANDA DI SINI
             // =====================================================================
-            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby8HulVwCM6wnmRF6Xvezlgy8vFt-Mlm7Kq_9G47I7lslKhiT5HbkzuaxKz4au5vAEGrg/exec";
+             const firebaseConfig = {
+                apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
+                authDomain: "database-immt-shop-2.firebaseapp.com",
+                projectId: "database-immt-shop-2",
+                storageBucket: "database-immt-shop-2.firebasestorage.app",
+                messagingSenderId: "490881653909",
+                appId: "1:490881653909:web:f61209d5a3a38be3260f9c",
+                measurementId: "G-Q3H1S79G2Z"
+            };
             // =====================================================================
-            
+
+            // Inisialisasi Firebase menggunakan namespace global
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
             const products = [
                 { id: 1, name: 'Jaslab', price: 140000, image: 'assets/jaslab-1.jpg', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/jaslab-1.jpg', 'assets/jaslab-2.jpg', 'assets/size-chart-a.jpg']},
                 { id: 2, name: 'Workshirt Kerja Praktik', price: 160000, image: 'assets/workshirt-kp-1.jpg', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-kp-1.jpg', 'assets/workshirt-kp-2.jpg', 'assets/size-chart-b.jpg']},
@@ -494,18 +511,11 @@
                     rincian: simplifiedCartString,
                     total: total,
                 };
-
-                const formData = new FormData();
-                formData.append('data', JSON.stringify(orderData));
-
+                
                 try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    // Anggap sukses jika fetch tidak melempar error, karena redirect akan menyebabkan 'opaque' response
-                    console.log("Data sent to Google Sheets (assumed success).");
+                    await db.collection("orders").add(orderData);
+                    
+                    console.log("Data sent to Firebase successfully.");
                     clearInterval(countdownInterval);
                     toggleModal(dom.paymentModal, false);
                     toggleModal(dom.successModal, true);
@@ -519,7 +529,7 @@
                     }, 4000);
 
                 } catch (error) {
-                    console.error("Error submitting order:", error);
+                    console.error("Error submitting order to Firebase:", error);
                      alert(`Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin.`);
                 } finally {
                     dom.finishPaymentBtn.disabled = false;
