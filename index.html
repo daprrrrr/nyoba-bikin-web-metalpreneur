@@ -254,16 +254,120 @@
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec";
             // =====================================================================
             
+            // =====================================================================
+            // DATA PRODUK (Ganti nama, harga, dan path foto di sini)
+            // =====================================================================
             const products = [
-                { id: 1, name: 'Jaslab', price: 140000, image: 'assets/jaslab-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/jaslab-1.png', 'assets/jaslab-2.png', 'assets/size-chart-a.png']},
-                { id: 2, name: 'Workshirt Kerja Praktik', price: 160000, image: 'assets/workshirt-kp-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-kp-1.png', 'assets/workshirt-kp-2.png', 'assets/size-chart-b.png']},
-                { id: 3, name: 'Workshirt Metalurgi', price: 179000, image: 'assets/workshirt-metal-1.png', hasSizes: true, sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], detailImages: ['assets/workshirt-metal-1.png', 'assets/workshirt-metal-2.png', 'assets/size-chart-c.png']},
-                { id: 4, name: 'Sticker (3pcs)', price: 15000, image: 'assets/sticker-pack-1.png', hasSizes: false, detailImages: ['assets/sticker-pack-1.png', 'assets/sticker-pack-2.png', 'assets/sticker-pack-3.png'] },
-                { id: 5, name: 'Sticker mobil', price: 15000, image: 'assets/sticker-mobil-1.png', hasSizes: false, detailImages: ['assets/sticker-mobil-1.png', 'assets/sticker-mobil-2.png', 'assets/sticker-mobil-3.png'] },
-                { id: 6, name: 'Keychain IMMt', price: 15000, image: 'assets/keychain-immt-1.png', hasSizes: false, detailImages: ['assets/keychain-immt-1.png', 'assets/keychain-immt-2.png', 'assets/keychain-immt-3.png'] },
-                { id: 7, name: 'Keychain Makara UI', price: 15000, image: 'assets/keychain-makara-1.png', hasSizes: false, detailImages: ['assets/keychain-makara-1.png', 'assets/keychain-makara-2.png', 'assets/keychain-makara-3.png'] },
-                { id: 8, name: 'Paket Alat Gamtek', price: 200000, image: 'assets/gamtek-1.png', hasSizes: false, detailImages: ['assets/gamtek-1.png', 'assets/gamtek-2.png', 'assets/gamtek-3.png'] },
+                // Produk A: Jaslab
+                { 
+                  id: 1, 
+                  name: 'Jaslab', 
+                  price: 140000, 
+                  image: 'assets/jaslab-1.jpg', 
+                  hasSizes: true, 
+                  sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], 
+                  detailImages: [
+                      'assets/jaslab-1.jpg',
+                      'assets/jaslab-2.jpg',
+                      'assets/size-chart-a.png'
+                  ]
+                },
+                // Produk B: Workshirt Kerja Praktik
+                { 
+                  id: 2, 
+                  name: 'Workshirt Kerja Praktik', 
+                  price: 160000, 
+                  image: 'assets/workshirt-kp-1.jpg', 
+                  hasSizes: true, 
+                  sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], 
+                  detailImages: [
+                      'assets/workshirt-kp-1.jpg',
+                      'assets/workshirt-kp-2.jpg',
+                      'assets/size-chart-b.png'
+                  ]
+                },
+                // Produk C: Workshirt Metalurgi
+                { 
+                  id: 3, 
+                  name: 'Workshirt Metalurgi', 
+                  price: 179000, 
+                  image: 'assets/workshirt-metal-1.jpg', 
+                  hasSizes: true, 
+                  sizes: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'], 
+                  detailImages: [
+                      'assets/workshirt-metal-1.jpg',
+                      'assets/workshirt-metal-2.jpg',
+                      'assets/size-chart-c.png'
+                  ]
+                },
+                // Produk D: Sticker (3pcs)
+                { 
+                  id: 4, 
+                  name: 'Sticker (3pcs)', 
+                  price: 15000, 
+                  image: 'assets/sticker-pack-1.jpg', 
+                  hasSizes: false, 
+                  detailImages: [
+                      'assets/sticker-pack-1.jpg',
+                      'assets/sticker-pack-2.jpg',
+                      'assets/sticker-pack-3.jpg'
+                  ] 
+                },
+                // Produk E: Sticker mobil
+                { 
+                  id: 5, 
+                  name: 'Sticker mobil', 
+                  price: 15000, 
+                  image: 'assets/sticker-mobil-1.jpg', 
+                  hasSizes: false, 
+                  detailImages: [
+                      'assets/sticker-mobil-1.jpg',
+                      'assets/sticker-mobil-2.jpg',
+                      'assets/sticker-mobil-3.jpg'
+                  ] 
+                },
+                // Produk F: Keychain IMMt
+                { 
+                  id: 6, 
+                  name: 'Keychain IMMt', 
+                  price: 15000, 
+                  image: 'assets/keychain-immt-1.jpg', 
+                  hasSizes: false, 
+                  detailImages: [
+                      'assets/keychain-immt-1.jpg',
+                      'assets/keychain-immt-2.jpg',
+                      'assets/keychain-immt-3.jpg'
+                  ]
+                },
+                // Produk G: Keychain Makara UI
+                { 
+                  id: 7, 
+                  name: 'Keychain Makara UI', 
+                  price: 15000, 
+                  image: 'assets/keychain-makara-1.jpg', 
+                  hasSizes: false, 
+                  detailImages: [
+                      'assets/keychain-makara-1.jpg',
+                      'assets/keychain-makara-2.jpg',
+                      'assets/keychain-makara-3.jpg'
+                  ]
+                },
+                // Produk H: Paket Alat Gamtek
+                { 
+                  id: 8, 
+                  name: 'Paket Alat Gamtek', 
+                  price: 200000, 
+                  image: 'assets/gamtek-1.jpg', 
+                  hasSizes: false, 
+                  detailImages: [
+                      'assets/gamtek-1.jpg',
+                      'assets/gamtek-2.jpg',
+                      'assets/gamtek-3.jpg'
+                  ] 
+                }
             ];
+            
+            // -- Sisa Kode Logika Website --
             let cart = [];
             let currentDetailProduct = null;
             let currentImageIndex = 0;
@@ -475,7 +579,7 @@
 
             const submitOrder = () => {
                 const url = GOOGLE_SCRIPT_URL;
-                if (url === "GANTI_DENGAN_URL_WEB_APP_ANDA" || !url) {
+                if (url === "https://script.google.com/macros/s/AKfycbzECGlJhPny8-xe4mE2p_tD53Yv-3bts3ENGJYPLKG9LyPqdpHNkOFUgPwmVD-hOAMn/exec" || !url) {
                     alert("URL Google Script belum diatur. Silakan hubungi admin.");
                     return;
                 }
@@ -496,7 +600,7 @@
 
                 fetch(url, {
                     method: 'POST',
-                    mode: 'no-cors', // Mode no-cors seringkali lebih berhasil dengan Google Scripts
+                    mode: 'no-cors',
                     body: JSON.stringify(orderData),
                     headers: { 'Content-Type': 'application/json' }
                 })
