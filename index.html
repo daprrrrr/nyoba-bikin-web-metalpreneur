@@ -1151,16 +1151,14 @@
                 console.error("Upload error:", error);
                 throw error; // Melemparkan kembali error untuk ditangani oleh blok catch di submitOrder
               },
+              // complete handler (sukses upload)
               async () => {
-                // Unggahan berhasil diselesaikan
-                // Dapatkan URL unduhan dari file yang diunggah
-                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                return downloadURL;
+                // Tidak perlu ada logika di sini karena `await uploadTask` di bawah akan menangkap hasilnya
               }
             );
 
             // Tunggu hingga unggahan selesai dan dapatkan URL unduhan
-            const snapshot = await uploadTask;
+            const snapshot = await uploadTask; // Ini akan menunggu hingga uploadTask selesai atau error
             const downloadURL = await snapshot.ref.getDownloadURL();
             return downloadURL;
         };
@@ -1178,11 +1176,12 @@
             
             try {
                 // Mengunggah bukti pembayaran dan mendapatkan URL-nya
+                // Fungsi uploadPaymentProof akan mengupdate teks tombol dengan progres
                 const paymentProofURL = await uploadPaymentProof(paymentProofFile);
                 
                 // Pastikan URL bukti pembayaran sudah didapatkan sebelum melanjutkan
                 if (!paymentProofURL) {
-                    throw new Error("Gagal mendapatkan URL bukti pembayaran.");
+                    throw new Error("Gagal mendapatkan URL bukti pembayaran. URL kosong.");
                 }
 
                 const total = cart.reduce(
@@ -1241,8 +1240,14 @@
                         case 'storage/object-not-found': // File tidak ditemukan, bisa terjadi saat mengambil URL
                             errorMessage = 'File tidak ditemukan di Storage. Mungkin ada masalah saat unggahan awal.';
                             break;
-                        case 'storage/unknown':
-                            errorMessage = 'Terjadi kesalahan tidak dikenal saat mengunggah file. Coba lagi.';
+                        case 'storage/retry-limit-exceeded':
+                            errorMessage = 'Gagal mengunggah file setelah beberapa percobaan. Koneksi mungkin tidak stabil.';
+                            break;
+                        case 'storage/invalid-checksum':
+                            errorMessage = 'Integritas file terganggu selama unggahan. Coba lagi.';
+                            break;
+                        case 'storage/quota-exceeded':
+                            errorMessage = 'Kuota penyimpanan Firebase Anda terlampaui.';
                             break;
                         default:
                             errorMessage = `Kesalahan unggah gambar: ${error.message}`;
