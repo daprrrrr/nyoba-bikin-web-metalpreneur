@@ -15,12 +15,13 @@
   </script>
   <script src="https://unpkg.com/lucide@latest">
   </script>
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs (hanya Firestore yang masih digunakan untuk data pesanan) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js">
   </script>
   <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js">
   </script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-storage-compat.js"></script>
+  <!-- Firebase Storage SDK tidak lagi diperlukan jika menggunakan Cloudinary -->
+  <!-- <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-storage-compat.js"></script> -->
   <style>
    body {
         font-family: "Inter", sans-serif;
@@ -655,10 +656,18 @@
           measurementId: "G-MW5G4T5PF7",
         };
 
-        // Inisialisasi Firebase menggunakan namespace global
+        // Kunci Konfigurasi Cloudinary Anda (GANTI DENGAN KUNCI ANDA SENDIRI!)
+        // Anda perlu membuat akun Cloudinary GRATIS dan mendapatkan ini.
+        // Upload Preset harus diatur sebagai "Unsigned" di dashboard Cloudinary Anda.
+        const CLOUDINARY_CLOUD_NAME = 'dmqznikmw'; // Contoh: 'my-shop-cloud'
+        const CLOUDINARY_UPLOAD_PRESET = 'bukti_pembayaran_uploads'; // Contoh: 'unsigned_uploads'
+
+
+        // Inisialisasi Firebase menggunakan namespace global (hanya Firestore yang relevan)
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const storage = firebase.storage();
+        // Firebase Storage tidak lagi digunakan secara langsung
+
 
         const products = [
           {
@@ -1120,47 +1129,51 @@
           });
         };
 
-        // Fungsi untuk mengunggah bukti pembayaran ke Firebase Storage
+        // Fungsi untuk mengunggah bukti pembayaran ke Cloudinary
         const uploadPaymentProof = async (file) => {
-            // Batas ukuran file 5MB (dalam byte)
             const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+            if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'ganti_dengan_cloud_name_anda' || !CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_UPLOAD_PRESET === 'ganti_dengan_upload_preset_anda') {
+                throw new Error("Kunci konfigurasi Cloudinary belum disetel. Harap perbarui CLOUDINARY_CLOUD_NAME dan CLOUDINARY_UPLOAD_PRESET.");
+            }
 
             if (file.size > MAX_FILE_SIZE) {
                 throw new Error("Ukuran file terlalu besar. Maksimal 5MB.");
             }
 
-            // Mendapatkan referensi ke storage bucket
-            const storageRef = storage.ref();
-            // Membuat nama file yang unik menggunakan timestamp dan nama asli file
-            const fileName = `payment_proofs/${Date.now()}_${file.name}`;
-            // Mendapatkan referensi ke lokasi file di storage
-            const imageRef = storageRef.child(fileName);
-            
-            // Mengunggah file dengan event listener untuk progress
-            const uploadTask = imageRef.put(file);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-            // Menambahkan event listener untuk memantau perubahan status unggahan
-            uploadTask.on('state_changed',
-              (snapshot) => {
-                // Menghitung persentase unggahan
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                dom.finishPaymentBtn.textContent = `Mengunggah: ${progress.toFixed(0)}%`;
-              },
-              (error) => {
-                // Menangani error selama unggahan
-                console.error("Upload error:", error);
-                throw error; // Melemparkan kembali error untuk ditangani oleh blok catch di submitOrder
-              },
-              // complete handler (sukses upload)
-              async () => {
-                // Tidak perlu ada logika di sini karena `await uploadTask` di bawah akan menangkap hasilnya
-              }
-            );
+            // Membuat objek XHR untuk memantau progres upload
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
 
-            // Tunggu hingga unggahan selesai dan dapatkan URL unduhan
-            const snapshot = await uploadTask; // Ini akan menunggu hingga uploadTask selesai atau error
-            const downloadURL = await snapshot.ref.getDownloadURL();
-            return downloadURL;
+                xhr.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        const progress = (event.loaded / event.total) * 100;
+                        dom.finishPaymentBtn.textContent = `Mengunggah: ${progress.toFixed(0)}%`;
+                    }
+                });
+
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
+                        resolve(data.secure_url); // URL aman dari gambar yang diunggah
+                    } else {
+                        const errorData = JSON.parse(xhr.responseText);
+                        console.error("Cloudinary Upload Error:", errorData);
+                        reject(new Error(`Gagal mengunggah ke Cloudinary: ${errorData.error.message || xhr.statusText}`));
+                    }
+                };
+
+                xhr.onerror = () => {
+                    reject(new Error('Kesalahan jaringan saat mengunggah ke Cloudinary.'));
+                };
+
+                xhr.send(formData);
+            });
         };
 
         // Fungsi untuk mengirim pesanan ke Firestore
@@ -1208,7 +1221,7 @@
                 // Menambahkan data pesanan ke koleksi 'orders' di Firestore
                 await db.collection("orders").add(orderData);
 
-                console.log("Data sent to Firebase successfully.");
+                console.log("Data sent to Firestore successfully.");
                 clearInterval(countdownInterval); // Menghentikan hitung mundur
                 toggleModal(dom.paymentModal, false); // Menutup modal pembayaran
                 toggleModal(dom.successModal, true); // Menampilkan modal sukses
@@ -1224,35 +1237,20 @@
                     updateUI(); // Memperbarui UI
                 }, 4000);
             } catch (error) {
-                console.error("Error submitting order to Firebase:", error);
+                console.error("Error submitting order:", error);
                 let errorMessage = "Maaf, terjadi kesalahan saat mengirim pesanan.";
                 if (error.message.includes("Ukuran file terlalu besar")) {
                     errorMessage = error.message;
-                } else if (error.code && error.code.includes('storage')) {
-                    // Firebase Storage error codes: https://firebase.google.com/docs/storage/web/handle-errors
-                    switch (error.code) {
-                        case 'storage/unauthorized':
-                            errorMessage = 'Tidak diizinkan mengunggah file. Periksa aturan keamanan Firebase Storage Anda.';
-                            break;
-                        case 'storage/canceled':
-                            errorMessage = 'Unggahan dibatalkan.';
-                            break;
-                        case 'storage/object-not-found': // File tidak ditemukan, bisa terjadi saat mengambil URL
-                            errorMessage = 'File tidak ditemukan di Storage. Mungkin ada masalah saat unggahan awal.';
-                            break;
-                        case 'storage/retry-limit-exceeded':
-                            errorMessage = 'Gagal mengunggah file setelah beberapa percobaan. Koneksi mungkin tidak stabil.';
-                            break;
-                        case 'storage/invalid-checksum':
-                            errorMessage = 'Integritas file terganggu selama unggahan. Coba lagi.';
-                            break;
-                        case 'storage/quota-exceeded':
-                            errorMessage = 'Kuota penyimpanan Firebase Anda terlampaui.';
-                            break;
-                        default:
-                            errorMessage = `Kesalahan unggah gambar: ${error.message}`;
-                    }
-                } else {
+                } else if (error.message.includes("Cloudinary")) {
+                    errorMessage = `Kesalahan unggah gambar ke Cloudinary: ${error.message}`;
+                } else if (error.message.includes("Kunci konfigurasi Cloudinary belum disetel")) {
+                    errorMessage = error.message;
+                }
+                // Jika error adalah dari Firestore (misalnya, masalah aturan keamanan Firestore)
+                else if (error.code && error.code.includes('firestore')) {
+                    errorMessage = `Kesalahan penyimpanan data (Firestore): ${error.message}. Harap periksa aturan keamanan Firestore Anda.`;
+                }
+                else {
                     errorMessage = `Kesalahan umum: ${error.message}`;
                 }
                 // Menggunakan modal kustom sebagai pengganti alert()
