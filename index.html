@@ -15,6 +15,7 @@
   </script>
   <script src="https://unpkg.com/lucide@latest">
   </script>
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js">
   </script>
   <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js">
@@ -156,6 +157,21 @@
           position: relative;
           z-index: 60; /* Higher than other modals to ensure it's on top if active */
       }
+      .product-overview-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease-in-out;
+          z-index: 50;
+      }
       .product-overview-modal-overlay.visible {
           opacity: 1;
           pointer-events: auto;
@@ -259,11 +275,9 @@
                 <i class="w-6 h-6" data-lucide="x"></i>
             </button>
         </div>
-        <div class="p-5 text-center">
-            <img id="promo-jaslab-image" src="" alt="Jaslab" class="w-48 h-48 object-cover mx-auto mb-4 rounded-lg"/>
-            <p class="text-lg font-semibold text-gray-800 mb-2">Harga: <span id="promo-jaslab-price" class="text-indigo-600 font-bold"></span></p>
+        <div class="p-5">
             <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab Anda:</p>
-            <div id="promo-jaslab-size-options" class="flex flex-wrap gap-3 justify-center">
+            <div id="promo-jaslab-size-options" class="flex flex-wrap gap-3">
                 </div>
             <button id="add-jaslab-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-6" disabled>
                 Tambahkan Jaslab ke Keranjang
@@ -280,11 +294,9 @@
                 <i class="w-6 h-6" data-lucide="x"></i>
             </button>
         </div>
-        <div class="p-5 text-center">
-            <img id="promo-workshirt-image" src="" alt="Workshirt Kerja Praktik" class="w-48 h-48 object-cover mx-auto mb-4 rounded-lg"/>
-            <p class="text-lg font-semibold text-gray-800 mb-2">Harga: <span id="promo-workshirt-price" class="text-indigo-600 font-bold"></span></p>
+        <div class="p-5">
             <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt KP Anda:</p>
-            <div id="promo-workshirt-size-options" class="flex flex-wrap gap-3 justify-center">
+            <div id="promo-workshirt-size-options" class="flex flex-wrap gap-3">
                 </div>
             <button id="add-workshirt-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-6" disabled>
                 Tambahkan Workshirt KP ke Keranjang
@@ -807,14 +819,10 @@
           mainPromoCard: document.getElementById("main-promo-card"), // For both overview and main promo
 
           promoJaslabModal: document.getElementById("promo-jaslab-modal"),
-          promoJaslabImage: document.getElementById("promo-jaslab-image"), // Added
-          promoJaslabPrice: document.getElementById("promo-jaslab-price"), // Added
           promoJaslabSizeOptions: document.getElementById("promo-jaslab-size-options"),
           addJaslabToCartBtn: document.getElementById("add-jaslab-to-cart-btn"),
 
           promoWorkshirtModal: document.getElementById("promo-workshirt-modal"),
-          promoWorkshirtImage: document.getElementById("promo-workshirt-image"), // Added
-          promoWorkshirtPrice: document.getElementById("promo-workshirt-price"), // Added
           promoWorkshirtSizeOptions: document.getElementById("promo-workshirt-size-options"),
           addWorkshirtToCartBtn: document.getElementById("add-workshirt-to-cart-btn"),
         };
@@ -1020,6 +1028,28 @@
           });
         };
 
+        const renderDetailActionButtons = () => {
+          if (!currentDetailProduct) return;
+          const itemsInCart = cart.filter(
+            (item) => item.id === currentDetailProduct.id
+          );
+          const totalInCart = itemsInCart.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
+
+          if (totalInCart > 0 && !currentDetailProduct.hasSizes) {
+            const item = itemsInCart[0];
+            dom.detailActionContainer.innerHTML = `<div class="flex items-center justify-center border rounded-lg w-full"><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-6 font-bold text-xl">${item.quantity} di keranjang</span><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div>`;
+          } else {
+            dom.detailActionContainer.innerHTML = `<button id="add-detail-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
+                        <i data-lucide="shopping-bag"></i>
+                        <span>Tambahkan ke Keranjang</span>
+                    </button>`;
+          }
+          lucide.createIcons();
+        };
+
         const startCountdown = () => {
           clearInterval(countdownInterval);
           let duration = 300;
@@ -1035,12 +1065,31 @@
 
         const handlePaymentTimeout = () => {
           clearInterval(countdownInterval);
-          alert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
+          // Menggunakan modal kustom sebagai pengganti alert()
+          showCustomAlert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
           toggleModal(dom.paymentModal, false);
           cart = [];
           customerData = null;
           dom.customerForm.reset();
           updateUI();
+        };
+
+        // Custom alert modal implementation
+        const showCustomAlert = (message) => {
+            const alertModal = document.createElement('div');
+            alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
+            alertModal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center p-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Pemberitahuan</h3>
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700" id="close-alert-btn">OK</button>
+                </div>
+            `;
+            document.body.appendChild(alertModal);
+
+            alertModal.querySelector('#close-alert-btn').addEventListener('click', () => {
+                document.body.removeChild(alertModal);
+            });
         };
 
         const populateConfirmationPage = (formData) => {
@@ -1071,81 +1120,84 @@
           });
         };
 
+        // Fungsi untuk mengunggah bukti pembayaran ke Firebase Storage
         const uploadPaymentProof = async (file) => {
-          const storageRef = storage.ref();
-          // Generate a more unique filename to prevent clashes
-          const timestamp = new Date().getTime();
-          const fileName = `payment_proofs/${timestamp}_${file.name}`;
-          const imageRef = storageRef.child(fileName);
-
-          try {
+            // Mendapatkan referensi ke storage bucket
+            const storageRef = storage.ref();
+            // Membuat nama file yang unik menggunakan timestamp dan nama asli file
+            const fileName = `payment_proofs/${Date.now()}_${file.name}`;
+            // Mendapatkan referensi ke lokasi file di storage
+            const imageRef = storageRef.child(fileName);
+            // Mengunggah file
             const snapshot = await imageRef.put(file);
+            // Mendapatkan URL unduhan dari file yang diunggah
             const downloadURL = await snapshot.ref.getDownloadURL();
-            console.log("File uploaded successfully. URL:", downloadURL);
             return downloadURL;
-          } catch (error) {
-            console.error("Error uploading file to Firebase Storage:", error);
-            // Re-throw the error so submitOrder can catch it
-            throw error;
-          }
         };
 
+        // Fungsi untuk mengirim pesanan ke Firestore
         const submitOrder = async () => {
-          if (!paymentProofFile) {
-            alert("Mohon unggah bukti pembayaran terlebih dahulu!");
-            return;
-          }
+            if (!paymentProofFile) {
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert("Mohon unggah bukti pembayaran terlebih dahulu!");
+                return;
+            }
 
-          dom.finishPaymentBtn.disabled = true;
-          dom.finishPaymentBtn.textContent = "Mengirim...";
+            dom.finishPaymentBtn.disabled = true;
+            dom.finishPaymentBtn.textContent = "Mengirim..."; // Mengubah teks tombol saat proses berlangsung
 
-          try {
-            const paymentProofURL = await uploadPaymentProof(paymentProofFile);
+            try {
+                // Mengunggah bukti pembayaran dan mendapatkan URL-nya
+                const paymentProofURL = await uploadPaymentProof(paymentProofFile);
 
-            const total = cart.reduce(
-              (sum, item) => sum + item.finalPrice * item.quantity,
-              0
-            );
-            const simplifiedCart = cart.map((item) => ({
-              name: item.name,
-              size: item.size || "N/A",
-              quantity: item.quantity,
-              price: item.finalPrice,
-            }));
+                const total = cart.reduce(
+                    (sum, item) => sum + item.finalPrice * item.quantity,
+                    0
+                );
+                // Menyederhanakan objek keranjang untuk disimpan di Firestore
+                const simplifiedCart = cart.map((item) => ({
+                    name: item.name,
+                    size: item.size || "N/A", // Jika tidak ada ukuran, gunakan "N/A"
+                    quantity: item.quantity,
+                    price: item.finalPrice,
+                }));
 
-            const orderData = {
-              customer: customerData,
-              items: simplifiedCart,
-              totalAmount: total,
-              paymentProofURL: paymentProofURL, // This is where the URL is stored
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            };
+                // Objek data pesanan yang akan disimpan di Firestore
+                const orderData = {
+                    customer: customerData, // Data pelanggan dari form
+                    items: simplifiedCart, // Barang-barang di keranjang
+                    totalAmount: total, // Total pembayaran
+                    paymentProofURL: paymentProofURL, // URL bukti pembayaran yang diunggah
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), // Timestamp saat pesanan dibuat
+                };
 
-            await db.collection("orders").add(orderData); // Add data to Firestore
+                // Menambahkan data pesanan ke koleksi 'orders' di Firestore
+                await db.collection("orders").add(orderData);
 
-            console.log("Order data and payment proof URL sent to Firestore successfully.");
-            clearInterval(countdownInterval);
-            toggleModal(dom.paymentModal, false);
-            toggleModal(dom.successModal, true);
+                console.log("Data sent to Firebase successfully.");
+                clearInterval(countdownInterval); // Menghentikan hitung mundur
+                toggleModal(dom.paymentModal, false); // Menutup modal pembayaran
+                toggleModal(dom.successModal, true); // Menampilkan modal sukses
 
-            setTimeout(() => {
-              toggleModal(dom.successModal, false);
-              cart = [];
-              customerData = null;
-              paymentProofFile = null; // Clear the stored file
-              dom.paymentProofInput.value = ''; // Clear file input
-              dom.finishPaymentBtn.disabled = true; // Disable button after success
-              updateUI();
-            }, 4000);
-          } catch (error) {
-            console.error("Error submitting order to Firebase:", error);
-            alert(
-              `Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`
-            );
-            // Re-enable button on error
-            dom.finishPaymentBtn.disabled = false;
-            dom.finishPaymentBtn.textContent = "Saya Sudah Membayar";
-          }
+                // Menutup modal sukses dan mereset keranjang setelah beberapa detik
+                setTimeout(() => {
+                    toggleModal(dom.successModal, false);
+                    cart = []; // Mengosongkan keranjang
+                    customerData = null; // Menghapus data pelanggan
+                    paymentProofFile = null; // Menghapus file yang tersimpan
+                    dom.paymentProofInput.value = ''; // Mengosongkan input file
+                    dom.finishPaymentBtn.disabled = true; // Menonaktifkan tombol setelah sukses
+                    updateUI(); // Memperbarui UI
+                }, 4000);
+            } catch (error) {
+                console.error("Error submitting order to Firebase:", error);
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert(
+                    `Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`
+                );
+            } finally {
+                dom.finishPaymentBtn.textContent = "Saya Sudah Membayar"; // Mengembalikan teks tombol
+            }
         };
 
         // Event Listeners
@@ -1167,7 +1219,8 @@
                 addToCart(currentDetailProduct.id, selectedSize);
                 toggleModal(dom.productDetailModal, false);
               } else {
-                alert("Silakan pilih ukuran terlebih dahulu.");
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert("Silakan pilih ukuran terlebih dahulu.");
               }
             } else {
               addToCart(currentDetailProduct.id);
@@ -1182,7 +1235,6 @@
         });
 
         document.body.addEventListener("click", (e) => {
-          // Handles size selection for normal product details
           if (e.target.matches("#detail-size-options .size-btn")) {
             document
               .querySelectorAll("#detail-size-options .size-btn")
@@ -1299,18 +1351,14 @@
             const promoItem = e.target.closest(".product-overview-item, #main-promo-card");
             if (promoItem && promoItem.dataset.promoId === 'maba') {
                 toggleModal(dom.productOverviewModal, false); // Close overview modal
-                
+
                 // Open Jaslab size selection modal
                 const jaslabProduct = products.find(p => p.id === 1); // Jaslab product ID is 1
                 if (jaslabProduct) {
-                    dom.promoJaslabImage.src = jaslabProduct.image; // Set image for Jaslab promo modal
                     dom.promoJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
                     promoJaslabSize = null; // Reset selection
-                    // Initial price display for Jaslab (with discount for the smallest size)
-                    const initialJaslabPrice = calculatePrice(jaslabProduct.price * 0.90, jaslabProduct.sizes[0] || 'S');
-                    dom.promoJaslabPrice.textContent = formatCurrency(initialJaslabPrice);
                     dom.addJaslabToCartBtn.disabled = true; // Disable button until size is selected
                     toggleModal(dom.promoJaslabModal, true);
                 }
@@ -1328,10 +1376,6 @@
                 );
                 e.target.classList.add("bg-green-600", "text-white");
                 promoJaslabSize = e.target.dataset.size;
-                const jaslabProduct = products.find(p => p.id === 1);
-                // Update price for selected size with discount
-                const updatedJaslabPrice = calculatePrice(jaslabProduct.price * 0.90, promoJaslabSize);
-                dom.promoJaslabPrice.textContent = formatCurrency(updatedJaslabPrice);
                 dom.addJaslabToCartBtn.disabled = false;
             }
         });
@@ -1340,23 +1384,20 @@
             if (promoJaslabSize) {
                 addToCart(1, promoJaslabSize); // Add Jaslab with selected size
                 toggleModal(dom.promoJaslabModal, false);
-                
+
                 // Then open Workshirt KP size selection modal
                 const workshirtKpProduct = products.find(p => p.id === 2); // Workshirt KP product ID is 2
                 if (workshirtKpProduct) {
-                    dom.promoWorkshirtImage.src = workshirtKpProduct.image; // Set image for Workshirt KP promo modal
                     dom.promoWorkshirtSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
                     promoWorkshirtKpSize = null; // Reset selection
-                    // Initial price display for Workshirt KP (for the smallest size)
-                    const initialWorkshirtPrice = calculatePrice(workshirtKpProduct.price, workshirtKpProduct.sizes[0] || 'S');
-                    dom.promoWorkshirtPrice.textContent = formatCurrency(initialWorkshirtPrice);
                     dom.addWorkshirtToCartBtn.disabled = true; // Disable button until size is selected
                     toggleModal(dom.promoWorkshirtModal, true);
                 }
             } else {
-                alert("Silakan pilih ukuran Jaslab terlebih dahulu.");
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert("Silakan pilih ukuran Jaslab terlebih dahulu.");
             }
         });
 
@@ -1368,10 +1409,6 @@
                 );
                 e.target.classList.add("bg-green-600", "text-white");
                 promoWorkshirtKpSize = e.target.dataset.size;
-                const workshirtKpProduct = products.find(p => p.id === 2);
-                // Update price for selected size
-                const updatedWorkshirtPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
-                dom.promoWorkshirtPrice.textContent = formatCurrency(updatedWorkshirtPrice);
                 dom.addWorkshirtToCartBtn.disabled = false;
             }
         });
@@ -1382,9 +1419,11 @@
                 addToCart(8); // Automatically add Gamtek (ID 8)
                 toggleModal(dom.promoWorkshirtModal, false);
                 toggleModal(dom.cartModal, true); // Show cart with all items
-                alert("Jaslab, Workshirt KP, dan Paket Alat Gamtek telah ditambahkan ke keranjang Anda!");
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert("Jaslab, Workshirt KP, dan Paket Alat Gamtek telah ditambahkan ke keranjang Anda!");
             } else {
-                alert("Silakan pilih ukuran Workshirt KP terlebih dahulu.");
+                // Menggunakan modal kustom sebagai pengganti alert()
+                showCustomAlert("Silakan pilih ukuran Workshirt KP terlebih dahulu.");
             }
         });
 
