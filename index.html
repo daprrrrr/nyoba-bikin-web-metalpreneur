@@ -408,7 +408,7 @@
       <span class="text-lg font-semibold text-gray-600">
        Total:
       </span>
-      <span class="text-2xl font-bold text-gray-900" id="cart-total">
+      <span id="cart-total" class="text-2xl font-bold text-gray-900">
        Rp 0
       </span>
      </div>
@@ -768,10 +768,10 @@
         let countdownInterval = null;
         let customerData = null;
         let selectedSize = null;
-        let filteredProducts = [...products]; // To store products after search filter
-        let paymentProofFile = null; // To store the uploaded file
+        let filteredProducts = [...products]; // Untuk menyimpan produk setelah filter pencarian
+        let paymentProofFile = null; // Untuk menyimpan file yang diunggah
 
-        // Variables for promo size selection
+        // Variabel untuk pemilihan ukuran promo
         let promoJaslabSize = null;
         let promoWorkshirtKpSize = null;
 
@@ -808,15 +808,15 @@
           customerDataSummary: document.getElementById("customer-data-summary"),
           countdownTimer: document.getElementById("countdown-timer"),
           searchInput: document.getElementById("search-input"),
-          // New elements for delivery address
+          // Elemen baru untuk alamat pengiriman
           deliveryOption: document.getElementById("delivery-option"),
           pickupOption: document.getElementById("pickup-option"),
           addressInputContainer: document.getElementById("address-input-container"),
           paymentProofInput: document.getElementById("payment-proof"),
 
-          // New elements for promo size modals
-          promoMabaCard: document.getElementById("promo-maba-card"), // For both overview and main promo
-          mainPromoCard: document.getElementById("main-promo-card"), // For both overview and main promo
+          // Elemen baru untuk modal ukuran promo
+          promoMabaCard: document.getElementById("promo-maba-card"), // Untuk overview dan promo utama
+          mainPromoCard: document.getElementById("main-promo-card"), // Untuk overview dan promo utama
 
           promoJaslabModal: document.getElementById("promo-jaslab-modal"),
           promoJaslabSizeOptions: document.getElementById("promo-jaslab-size-options"),
@@ -837,24 +837,24 @@
           basePrice +
           ((["XL", "XXL", "3XL", "4XL", "5XL"].indexOf(size) + 1) * 5000 || 0);
 
-        // Function to toggle modal visibility and manage body scroll
+        // Fungsi untuk mengaktifkan/menonaktifkan visibilitas modal dan mengelola scroll body
         const toggleModal = (modal, show) => {
           modal.classList.toggle("visible", show);
           if (show) {
-              document.body.style.overflow = 'hidden'; // Disable body scroll
-              lucide.createIcons(); // Re-create icons when a modal becomes visible
+              document.body.style.overflow = 'hidden'; // Nonaktifkan scroll body
+              lucide.createIcons(); // Buat ulang ikon saat modal terlihat
           } else {
-              // Only re-enable scroll if no other modal is visible
+              // Hanya aktifkan kembali scroll jika tidak ada modal lain yang terlihat
               const anyOtherModalVisible = Array.from(document.querySelectorAll('.modal-overlay, .product-overview-modal-overlay')).some(m => m.classList.contains('visible'));
               if (!anyOtherModalVisible) {
-                  document.body.style.overflow = ''; // Re-enable body scroll
+                  document.body.style.overflow = ''; // Aktifkan kembali scroll body
               }
           }
         };
 
 
         const updateUI = () => {
-          renderProducts(filteredProducts); // Render filtered products
+          renderProducts(filteredProducts); // Render produk yang difilter
           renderCart();
         };
 
@@ -931,10 +931,10 @@
 
         const addToCart = (productId, size = null, quantity = 1) => {
           const product = products.find((p) => p.id === productId);
-          // Apply 10% discount for Jaslab (ID 1) if it's the Maba promo scenario
+          // Terapkan diskon 10% untuk Jaslab (ID 1) jika skenario promo Maba aktif
           let finalPrice = product.price;
-          if (productId === 1 && (promoJaslabSize || currentDetailProduct?.id === 1)) { // Check if it's Jaslab and promo is active or it's directly from product detail
-              finalPrice = product.price * 0.90; // 10% discount
+          if (productId === 1 && (promoJaslabSize || currentDetailProduct?.id === 1)) { // Periksa apakah itu Jaslab dan promo aktif atau langsung dari detail produk
+              finalPrice = product.price * 0.90; // Diskon 10%
           }
 
           if (product.hasSizes) {
@@ -1074,7 +1074,7 @@
           updateUI();
         };
 
-        // Custom alert modal implementation
+        // Implementasi modal kustom untuk alert
         const showCustomAlert = (message) => {
             const alertModal = document.createElement('div');
             alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
@@ -1135,9 +1135,32 @@
             const fileName = `payment_proofs/${Date.now()}_${file.name}`;
             // Mendapatkan referensi ke lokasi file di storage
             const imageRef = storageRef.child(fileName);
-            // Mengunggah file
-            const snapshot = await imageRef.put(file);
-            // Mendapatkan URL unduhan dari file yang diunggah
+            
+            // Mengunggah file dengan event listener untuk progress
+            const uploadTask = imageRef.put(file);
+
+            // Menambahkan event listener untuk memantau perubahan status unggahan
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                // Menghitung persentase unggahan
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                dom.finishPaymentBtn.textContent = `Mengunggah: ${progress.toFixed(0)}%`;
+              },
+              (error) => {
+                // Menangani error selama unggahan
+                console.error("Upload error:", error);
+                throw error; // Melemparkan kembali error untuk ditangani oleh blok catch di submitOrder
+              },
+              async () => {
+                // Unggahan berhasil diselesaikan
+                // Dapatkan URL unduhan dari file yang diunggah
+                const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                return downloadURL;
+              }
+            );
+
+            // Tunggu hingga unggahan selesai dan dapatkan URL unduhan
+            const snapshot = await uploadTask;
             const downloadURL = await snapshot.ref.getDownloadURL();
             return downloadURL;
         };
@@ -1152,11 +1175,15 @@
 
             dom.finishPaymentBtn.disabled = true;
             const originalButtonText = dom.finishPaymentBtn.textContent; // Simpan teks asli
-            dom.finishPaymentBtn.textContent = "Mengunggah Bukti..."; // Mengubah teks tombol saat proses berlangsung
-
+            
             try {
                 // Mengunggah bukti pembayaran dan mendapatkan URL-nya
                 const paymentProofURL = await uploadPaymentProof(paymentProofFile);
+                
+                // Pastikan URL bukti pembayaran sudah didapatkan sebelum melanjutkan
+                if (!paymentProofURL) {
+                    throw new Error("Gagal mendapatkan URL bukti pembayaran.");
+                }
 
                 const total = cart.reduce(
                     (sum, item) => sum + item.finalPrice * item.quantity,
@@ -1203,7 +1230,25 @@
                 if (error.message.includes("Ukuran file terlalu besar")) {
                     errorMessage = error.message;
                 } else if (error.code && error.code.includes('storage')) {
-                    errorMessage = `Kesalahan unggah gambar: ${error.message}`;
+                    // Firebase Storage error codes: https://firebase.google.com/docs/storage/web/handle-errors
+                    switch (error.code) {
+                        case 'storage/unauthorized':
+                            errorMessage = 'Tidak diizinkan mengunggah file. Periksa aturan keamanan Firebase Storage Anda.';
+                            break;
+                        case 'storage/canceled':
+                            errorMessage = 'Unggahan dibatalkan.';
+                            break;
+                        case 'storage/object-not-found': // File tidak ditemukan, bisa terjadi saat mengambil URL
+                            errorMessage = 'File tidak ditemukan di Storage. Mungkin ada masalah saat unggahan awal.';
+                            break;
+                        case 'storage/unknown':
+                            errorMessage = 'Terjadi kesalahan tidak dikenal saat mengunggah file. Coba lagi.';
+                            break;
+                        default:
+                            errorMessage = `Kesalahan unggah gambar: ${error.message}`;
+                    }
+                } else {
+                    errorMessage = `Kesalahan umum: ${error.message}`;
                 }
                 // Menggunakan modal kustom sebagai pengganti alert()
                 showCustomAlert(`${errorMessage} Silakan coba lagi atau hubungi admin.`);
@@ -1301,23 +1346,23 @@
           }
         });
 
-        // Toggle delivery address input based on radio button selection
+        // Toggle input alamat pengiriman berdasarkan pilihan radio button
         dom.deliveryOption.addEventListener('change', () => {
             dom.addressInputContainer.style.display = dom.deliveryOption.checked ? 'block' : 'none';
-            // Set required attribute for address fields when delivery is selected
+            // Set atribut required untuk kolom alamat jika pengiriman dipilih
             dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
                 if (dom.deliveryOption.checked) {
                     input.setAttribute('required', '');
                 } else {
                     input.removeAttribute('required');
-                    input.value = ''; // Clear value if not required
+                    input.value = ''; // Hapus nilai jika tidak diperlukan
                 }
             });
         });
 
         dom.pickupOption.addEventListener('change', () => {
             dom.addressInputContainer.style.display = 'none';
-            // Remove required attribute and clear values when pickup is selected
+            // Hapus atribut required dan kosongkan nilai jika pengambilan dipilih
             dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
                 input.removeAttribute('required');
                 input.value = '';
@@ -1333,7 +1378,7 @@
           startCountdown();
         });
 
-        // Enable/disable finish payment button based on file input
+        // Aktifkan/nonaktifkan tombol penyelesaian pembayaran berdasarkan input file
         dom.paymentProofInput.addEventListener('change', (e) => {
             paymentProofFile = e.target.files[0];
             if (paymentProofFile) {
@@ -1353,34 +1398,34 @@
           })
         );
 
-        // Product Overview Modal Event Listeners
+        // Event Listener Modal Ikhtisar Produk
         dom.closeProductOverviewModalBtn.addEventListener("click", () => {
             toggleModal(dom.productOverviewModal, false);
         });
 
-        // Handle clicks on promo items in the overview modal and main promo section
+        // Tangani klik pada item promo di modal ikhtisar dan bagian promo utama
         const handlePromoClick = (e) => {
             const promoItem = e.target.closest(".product-overview-item, #main-promo-card");
             if (promoItem && promoItem.dataset.promoId === 'maba') {
-                toggleModal(dom.productOverviewModal, false); // Close overview modal
-
-                // Open Jaslab size selection modal
-                const jaslabProduct = products.find(p => p.id === 1); // Jaslab product ID is 1
+                toggleModal(dom.productOverviewModal, false); // Tutup modal ikhtisar
+                
+                // Buka modal pemilihan ukuran Jaslab
+                const jaslabProduct = products.find(p => p.id === 1); // ID produk Jaslab adalah 1
                 if (jaslabProduct) {
                     dom.promoJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
-                    promoJaslabSize = null; // Reset selection
-                    dom.addJaslabToCartBtn.disabled = true; // Disable button until size is selected
+                    promoJaslabSize = null; // Reset pilihan
+                    dom.addJaslabToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
                     toggleModal(dom.promoJaslabModal, true);
                 }
             }
         };
 
         dom.productOverviewModal.addEventListener("click", handlePromoClick);
-        dom.mainPromoCard.addEventListener("click", handlePromoClick); // Add listener to the main promo card
+        dom.mainPromoCard.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama
 
-        // Handle Jaslab size selection in promo modal
+        // Tangani pemilihan ukuran Jaslab di modal promo
         dom.promoJaslabSizeOptions.addEventListener('click', (e) => {
             if (e.target.matches('.size-btn')) {
                 dom.promoJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn =>
@@ -1394,17 +1439,17 @@
 
         dom.addJaslabToCartBtn.addEventListener('click', () => {
             if (promoJaslabSize) {
-                addToCart(1, promoJaslabSize); // Add Jaslab with selected size
+                addToCart(1, promoJaslabSize); // Tambahkan Jaslab dengan ukuran yang dipilih
                 toggleModal(dom.promoJaslabModal, false);
-
-                // Then open Workshirt KP size selection modal
-                const workshirtKpProduct = products.find(p => p.id === 2); // Workshirt KP product ID is 2
+                
+                // Kemudian buka modal pemilihan ukuran Workshirt KP
+                const workshirtKpProduct = products.find(p => p.id === 2); // ID produk Workshirt KP adalah 2
                 if (workshirtKpProduct) {
                     dom.promoWorkshirtSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
-                    promoWorkshirtKpSize = null; // Reset selection
-                    dom.addWorkshirtToCartBtn.disabled = true; // Disable button until size is selected
+                    promoWorkshirtKpSize = null; // Reset pilihan
+                    dom.addWorkshirtToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
                     toggleModal(dom.promoWorkshirtModal, true);
                 }
             } else {
@@ -1413,7 +1458,7 @@
             }
         });
 
-        // Handle Workshirt KP size selection in promo modal
+        // Tangani pemilihan ukuran Workshirt KP di modal promo
         dom.promoWorkshirtSizeOptions.addEventListener('click', (e) => {
             if (e.target.matches('.size-btn')) {
                 dom.promoWorkshirtSizeOptions.querySelectorAll('.size-btn').forEach(btn =>
@@ -1427,10 +1472,10 @@
 
         dom.addWorkshirtToCartBtn.addEventListener('click', () => {
             if (promoWorkshirtKpSize) {
-                addToCart(2, promoWorkshirtKpSize); // Add Workshirt KP with selected size
-                addToCart(8); // Automatically add Gamtek (ID 8)
+                addToCart(2, promoWorkshirtKpSize); // Tambahkan Workshirt KP dengan ukuran yang dipilih
+                addToCart(8); // Otomatis tambahkan Gamtek (ID 8)
                 toggleModal(dom.promoWorkshirtModal, false);
-                toggleModal(dom.cartModal, true); // Show cart with all items
+                toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
                 // Menggunakan modal kustom sebagai pengganti alert()
                 showCustomAlert("Jaslab, Workshirt KP, dan Paket Alat Gamtek telah ditambahkan ke keranjang Anda!");
             } else {
@@ -1439,7 +1484,7 @@
             }
         });
 
-        // Search functionality
+        // Fungsionalitas Pencarian
         dom.searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
             filteredProducts = products.filter(product =>
@@ -1450,7 +1495,7 @@
 
         // Inisialisasi awal saat halaman dimuat
         updateUI();
-        toggleModal(dom.productOverviewModal, true); // Show product overview modal on load
+        toggleModal(dom.productOverviewModal, true); // Tampilkan modal ikhtisar produk saat memuat
       });
   </script>
  </body>
