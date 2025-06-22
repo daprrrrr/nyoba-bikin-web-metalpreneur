@@ -1122,6 +1122,13 @@
 
         // Fungsi untuk mengunggah bukti pembayaran ke Firebase Storage
         const uploadPaymentProof = async (file) => {
+            // Batas ukuran file 5MB (dalam byte)
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+            if (file.size > MAX_FILE_SIZE) {
+                throw new Error("Ukuran file terlalu besar. Maksimal 5MB.");
+            }
+
             // Mendapatkan referensi ke storage bucket
             const storageRef = storage.ref();
             // Membuat nama file yang unik menggunakan timestamp dan nama asli file
@@ -1144,7 +1151,8 @@
             }
 
             dom.finishPaymentBtn.disabled = true;
-            dom.finishPaymentBtn.textContent = "Mengirim..."; // Mengubah teks tombol saat proses berlangsung
+            const originalButtonText = dom.finishPaymentBtn.textContent; // Simpan teks asli
+            dom.finishPaymentBtn.textContent = "Mengunggah Bukti..."; // Mengubah teks tombol saat proses berlangsung
 
             try {
                 // Mengunggah bukti pembayaran dan mendapatkan URL-nya
@@ -1191,12 +1199,16 @@
                 }, 4000);
             } catch (error) {
                 console.error("Error submitting order to Firebase:", error);
+                let errorMessage = "Maaf, terjadi kesalahan saat mengirim pesanan.";
+                if (error.message.includes("Ukuran file terlalu besar")) {
+                    errorMessage = error.message;
+                } else if (error.code && error.code.includes('storage')) {
+                    errorMessage = `Kesalahan unggah gambar: ${error.message}`;
+                }
                 // Menggunakan modal kustom sebagai pengganti alert()
-                showCustomAlert(
-                    `Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`
-                );
+                showCustomAlert(`${errorMessage} Silakan coba lagi atau hubungi admin.`);
             } finally {
-                dom.finishPaymentBtn.textContent = "Saya Sudah Membayar"; // Mengembalikan teks tombol
+                dom.finishPaymentBtn.textContent = originalButtonText; // Mengembalikan teks tombol asli
             }
         };
 
