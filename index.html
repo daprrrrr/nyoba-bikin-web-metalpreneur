@@ -156,21 +156,6 @@
           position: relative;
           z-index: 60; /* Higher than other modals to ensure it's on top if active */
       }
-      .product-overview-modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 0.3s ease-in-out;
-          z-index: 50;
-      }
       .product-overview-modal-overlay.visible {
           opacity: 1;
           pointer-events: auto;
@@ -274,9 +259,11 @@
                 <i class="w-6 h-6" data-lucide="x"></i>
             </button>
         </div>
-        <div class="p-5">
+        <div class="p-5 text-center">
+            <img id="promo-jaslab-image" src="" alt="Jaslab" class="w-48 h-48 object-cover mx-auto mb-4 rounded-lg"/>
+            <p class="text-lg font-semibold text-gray-800 mb-2">Harga: <span id="promo-jaslab-price" class="text-indigo-600 font-bold"></span></p>
             <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab Anda:</p>
-            <div id="promo-jaslab-size-options" class="flex flex-wrap gap-3">
+            <div id="promo-jaslab-size-options" class="flex flex-wrap gap-3 justify-center">
                 </div>
             <button id="add-jaslab-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-6" disabled>
                 Tambahkan Jaslab ke Keranjang
@@ -293,9 +280,11 @@
                 <i class="w-6 h-6" data-lucide="x"></i>
             </button>
         </div>
-        <div class="p-5">
+        <div class="p-5 text-center">
+            <img id="promo-workshirt-image" src="" alt="Workshirt Kerja Praktik" class="w-48 h-48 object-cover mx-auto mb-4 rounded-lg"/>
+            <p class="text-lg font-semibold text-gray-800 mb-2">Harga: <span id="promo-workshirt-price" class="text-indigo-600 font-bold"></span></p>
             <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt KP Anda:</p>
-            <div id="promo-workshirt-size-options" class="flex flex-wrap gap-3">
+            <div id="promo-workshirt-size-options" class="flex flex-wrap gap-3 justify-center">
                 </div>
             <button id="add-workshirt-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-6" disabled>
                 Tambahkan Workshirt KP ke Keranjang
@@ -818,10 +807,14 @@
           mainPromoCard: document.getElementById("main-promo-card"), // For both overview and main promo
 
           promoJaslabModal: document.getElementById("promo-jaslab-modal"),
+          promoJaslabImage: document.getElementById("promo-jaslab-image"), // Added
+          promoJaslabPrice: document.getElementById("promo-jaslab-price"), // Added
           promoJaslabSizeOptions: document.getElementById("promo-jaslab-size-options"),
           addJaslabToCartBtn: document.getElementById("add-jaslab-to-cart-btn"),
 
           promoWorkshirtModal: document.getElementById("promo-workshirt-modal"),
+          promoWorkshirtImage: document.getElementById("promo-workshirt-image"), // Added
+          promoWorkshirtPrice: document.getElementById("promo-workshirt-price"), // Added
           promoWorkshirtSizeOptions: document.getElementById("promo-workshirt-size-options"),
           addWorkshirtToCartBtn: document.getElementById("add-workshirt-to-cart-btn"),
         };
@@ -1027,28 +1020,6 @@
           });
         };
 
-        const renderDetailActionButtons = () => {
-          if (!currentDetailProduct) return;
-          const itemsInCart = cart.filter(
-            (item) => item.id === currentDetailProduct.id
-          );
-          const totalInCart = itemsInCart.reduce(
-            (sum, item) => sum + item.quantity,
-            0
-          );
-
-          if (totalInCart > 0 && !currentDetailProduct.hasSizes) {
-            const item = itemsInCart[0];
-            dom.detailActionContainer.innerHTML = `<div class="flex items-center justify-center border rounded-lg w-full"><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="-1">-</button><span class="px-6 font-bold text-xl">${item.quantity} di keranjang</span><button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${item.cartItemId}" data-change="1">+</button></div>`;
-          } else {
-            dom.detailActionContainer.innerHTML = `<button id="add-detail-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
-                        <i data-lucide="shopping-bag"></i>
-                        <span>Tambahkan ke Keranjang</span>
-                    </button>`;
-          }
-          lucide.createIcons();
-        };
-
         const startCountdown = () => {
           clearInterval(countdownInterval);
           let duration = 300;
@@ -1102,11 +1073,21 @@
 
         const uploadPaymentProof = async (file) => {
           const storageRef = storage.ref();
-          const fileName = `payment_proofs/${Date.now()}_${file.name}`;
+          // Generate a more unique filename to prevent clashes
+          const timestamp = new Date().getTime();
+          const fileName = `payment_proofs/${timestamp}_${file.name}`;
           const imageRef = storageRef.child(fileName);
-          const snapshot = await imageRef.put(file);
-          const downloadURL = await snapshot.ref.getDownloadURL();
-          return downloadURL;
+
+          try {
+            const snapshot = await imageRef.put(file);
+            const downloadURL = await snapshot.ref.getDownloadURL();
+            console.log("File uploaded successfully. URL:", downloadURL);
+            return downloadURL;
+          } catch (error) {
+            console.error("Error uploading file to Firebase Storage:", error);
+            // Re-throw the error so submitOrder can catch it
+            throw error;
+          }
         };
 
         const submitOrder = async () => {
@@ -1136,13 +1117,13 @@
               customer: customerData,
               items: simplifiedCart,
               totalAmount: total,
-              paymentProofURL: paymentProofURL,
+              paymentProofURL: paymentProofURL, // This is where the URL is stored
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             };
 
-            await db.collection("orders").add(orderData);
+            await db.collection("orders").add(orderData); // Add data to Firestore
 
-            console.log("Data sent to Firebase successfully.");
+            console.log("Order data and payment proof URL sent to Firestore successfully.");
             clearInterval(countdownInterval);
             toggleModal(dom.paymentModal, false);
             toggleModal(dom.successModal, true);
@@ -1161,7 +1142,8 @@
             alert(
               `Maaf, terjadi kesalahan saat mengirim pesanan. Silakan coba lagi atau hubungi admin. Error: ${error.message}`
             );
-          } finally {
+            // Re-enable button on error
+            dom.finishPaymentBtn.disabled = false;
             dom.finishPaymentBtn.textContent = "Saya Sudah Membayar";
           }
         };
@@ -1200,6 +1182,7 @@
         });
 
         document.body.addEventListener("click", (e) => {
+          // Handles size selection for normal product details
           if (e.target.matches("#detail-size-options .size-btn")) {
             document
               .querySelectorAll("#detail-size-options .size-btn")
@@ -1320,10 +1303,14 @@
                 // Open Jaslab size selection modal
                 const jaslabProduct = products.find(p => p.id === 1); // Jaslab product ID is 1
                 if (jaslabProduct) {
+                    dom.promoJaslabImage.src = jaslabProduct.image; // Set image for Jaslab promo modal
                     dom.promoJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
                     promoJaslabSize = null; // Reset selection
+                    // Initial price display for Jaslab (with discount for the smallest size)
+                    const initialJaslabPrice = calculatePrice(jaslabProduct.price * 0.90, jaslabProduct.sizes[0] || 'S');
+                    dom.promoJaslabPrice.textContent = formatCurrency(initialJaslabPrice);
                     dom.addJaslabToCartBtn.disabled = true; // Disable button until size is selected
                     toggleModal(dom.promoJaslabModal, true);
                 }
@@ -1341,6 +1328,10 @@
                 );
                 e.target.classList.add("bg-green-600", "text-white");
                 promoJaslabSize = e.target.dataset.size;
+                const jaslabProduct = products.find(p => p.id === 1);
+                // Update price for selected size with discount
+                const updatedJaslabPrice = calculatePrice(jaslabProduct.price * 0.90, promoJaslabSize);
+                dom.promoJaslabPrice.textContent = formatCurrency(updatedJaslabPrice);
                 dom.addJaslabToCartBtn.disabled = false;
             }
         });
@@ -1353,10 +1344,14 @@
                 // Then open Workshirt KP size selection modal
                 const workshirtKpProduct = products.find(p => p.id === 2); // Workshirt KP product ID is 2
                 if (workshirtKpProduct) {
+                    dom.promoWorkshirtImage.src = workshirtKpProduct.image; // Set image for Workshirt KP promo modal
                     dom.promoWorkshirtSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
                         `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
                     ).join("");
                     promoWorkshirtKpSize = null; // Reset selection
+                    // Initial price display for Workshirt KP (for the smallest size)
+                    const initialWorkshirtPrice = calculatePrice(workshirtKpProduct.price, workshirtKpProduct.sizes[0] || 'S');
+                    dom.promoWorkshirtPrice.textContent = formatCurrency(initialWorkshirtPrice);
                     dom.addWorkshirtToCartBtn.disabled = true; // Disable button until size is selected
                     toggleModal(dom.promoWorkshirtModal, true);
                 }
@@ -1373,6 +1368,10 @@
                 );
                 e.target.classList.add("bg-green-600", "text-white");
                 promoWorkshirtKpSize = e.target.dataset.size;
+                const workshirtKpProduct = products.find(p => p.id === 2);
+                // Update price for selected size
+                const updatedWorkshirtPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
+                dom.promoWorkshirtPrice.textContent = formatCurrency(updatedWorkshirtPrice);
                 dom.addWorkshirtToCartBtn.disabled = false;
             }
         });
