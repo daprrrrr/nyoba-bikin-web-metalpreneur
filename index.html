@@ -892,6 +892,8 @@
             description: "Stiker khusus untuk mobil Anda, tunjukkan identitas IMMt Anda di jalan.",
             image: "assets/sticker-mobil-1.jpg",
             hasSizes: false,
+            hasOptions: true, // New property for options
+            options: ["Stiker Fakultas Teknik", "Stiker Metalurgi"], // New options for sticker mobil
             detailImages: [
               "assets/sticker-mobil-1.jpg",
               "assets/sticker-mobil-2.jpg",
@@ -1117,8 +1119,26 @@
               const itemTotal = item.finalPrice * item.quantity;
               total += itemTotal;
               itemCount += item.quantity;
+
+              // Determine image path based on product ID and selected option
+              let itemImage = item.image; // Default to product's main image
+              if (item.id === 6) { // Keychain IMMt
+                  if (item.option === "Keychain Kain Bordir") {
+                      itemImage = "assets/keychain-immt-1.jpg";
+                  } else if (item.option === "Keychain Akrilik") {
+                      itemImage = "assets/keychain-immt-2.jpg";
+                  }
+              } else if (item.id === 5) { // Sticker mobil
+                  if (item.option === "Stiker Fakultas Teknik") {
+                      itemImage = "assets/sticker-mobil-1.jpg";
+                  } else if (item.option === "Stiker Metalurgi") {
+                      itemImage = "assets/sticker-mobil-2.jpg";
+                  }
+              }
+
+
               dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${
-                item.image
+                itemImage
               }" alt="${
                 item.name
               }" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${
@@ -1226,7 +1246,7 @@
             );
           }
 
-          // Handle options (for Keychain IMMt)
+          // Handle options (for Keychain IMMt and Sticker Mobil)
           if (currentDetailProduct.hasOptions && currentDetailProduct.options) {
             dom.detailOptionContainer.style.display = 'block';
             dom.detailOptionOptions.innerHTML = currentDetailProduct.options
@@ -1642,7 +1662,7 @@
             dom.detailProductPrice.textContent = formatCurrency(price);
             renderDetailActionButtons(); // Re-render button to enable quantity if a size is selected
           }
-          // Handle option selection for keychains
+          // Handle option selection for keychains and sticker mobil
           if (e.target.matches("#detail-option-options .option-btn")) {
             document
               .querySelectorAll("#detail-option-options .option-btn")
@@ -1856,7 +1876,7 @@
                 addToCart(keychainImmtProduct.id, null, "Keychain Kain Bordir", 1, false); // Keychain IMMt 1
                 addToCart(keychainImmtProduct.id, null, "Keychain Akrilik", 1, false); // Keychain IMMt 2
                 addToCart(keychainMakaraProduct.id, null, null, 1, false); // Keychain Makara UI
-                addToCart(stickerMobilProduct.id, null, null, 1, false); // Sticker Mobil
+                addToCart(stickerMobilProduct.id, null, "Stiker Fakultas Teknik", 1, false); // Sticker Mobil (Default option if no option is picked on bundle)
                 
                 toggleModal(dom.bundlePromoMabaModal, false);
                 toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
