@@ -151,11 +151,7 @@
           background-color: #fff;
           border-radius: 1rem;
           padding: 1.5rem;
-          /* Mengubah max-width dan menghilangkan max-height agar bisa melebar */
-          /* max-width: 90vw; ini akan diatur ulang di @media untuk mobile */
           max-height: unset; /* Menghilangkan batasan tinggi */
-          overflow-y: hidden; /* Sembunyikan scroll vertikal */
-          overflow-x: auto; /* Aktifkan scroll horizontal */
           position: relative;
           z-index: 60; /* Higher than other modals to ensure it's on top if active */
       }
@@ -192,7 +188,6 @@
       .product-overview-grid {
           display: flex; /* Menggunakan flexbox untuk tata letak horizontal */
           gap: 1rem;
-          /* Menghilangkan grid-template-columns */
           /* Menjamin lebar minimum untuk setiap item agar tidak terlalu menyempit */
           min-width: fit-content;
       }
@@ -252,34 +247,68 @@
       }
 
       /* Fix for product overview modal positioning and scroll on mobile */
-      @media (max-width: 767px) { /* For mobile devices */
+      @media (max-width: 767px) { /* For mobile devices (up to md breakpoint) */
           .product-overview-modal-overlay {
               align-items: flex-start; /* Align to top */
               padding-top: 2rem; /* Add some padding from the top */
+              /* Removed overflow-x:hidden from here */
+              overflow-x: hidden; /* Ensure overlay itself doesn't scroll horizontally */
           }
           .product-overview-modal-content {
               max-width: 95vw; /* Slightly wider on mobile */
               margin: 0 auto; /* Center the modal content */
-              overflow-y: hidden; /* Prevent vertical scrolling on the modal content itself */
-              overflow-x: hidden; /* Prevent horizontal scrolling on the modal content itself */
+              overflow-y: auto; /* Allow vertical scrolling for the entire content of the modal */
+              overflow-x: hidden; /* Ensure modal content doesn't scroll horizontally */
+              max-height: 90vh; /* Limit height to prevent modal from taking full screen */
           }
           .product-overview-modal-content h2 {
               position: sticky; /* Make the headline sticky */
               top: 0;
               background-color: white; /* Ensure background to cover scrolling content */
-              z-index: 1; /* Keep it above scrolling items */
+              z-index: 10; /* Keep it above scrolling items, higher than items */
               padding-bottom: 1rem; /* Add some padding below the title */
               padding-top: 0.5rem; /* Add some padding above the title */
               margin-top: -1.5rem; /* Adjust for padding on modal-content */
               margin-left: -1.5rem;
               margin-right: -1.5rem;
-              width: calc(100% + 3rem); /* Adjust width to cover full modal width */
+              width: calc(100% + 3rem); /* Adjust width to cover full modal width, accounting for padding */
               box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
           }
           .product-overview-grid {
               overflow-x: auto; /* Allow horizontal scrolling only for the grid items */
               -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
               padding-bottom: 1rem; /* Add padding for scrollbar */
+          }
+      }
+
+      /* New: Fix for main promo cards on small screens */
+      @media (max-width: 639px) { /* For screens smaller than sm (640px) */
+          /* Ensure the container of main promo cards allows horizontal scrolling */
+          .container.mx-auto.mt-8.mb-12.px-4 > div { /* Targeting the direct parent of flex space-x-4 */
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
+              padding-bottom: 1rem; /* Space for scrollbar */
+          }
+
+          .flex.space-x-4.justify-center {
+              justify-content: flex-start; /* Align items to the start instead of center */
+              padding-left: 0; /* Remove fixed padding here, let it be handled by container */
+              padding-right: 0;
+              width: fit-content; /* Allow flex container to be as wide as its content */
+          }
+          /* Apply flex-shrink-0 to individual promo cards to prevent them from shrinking */
+          #main-promo-card, #main-promo-anak-metal-card {
+              flex-shrink: 0;
+              width: 85vw; /* Make each card take up 85% of viewport width */
+              max-width: 320px; /* Optional: max width for very large phones in portrait */
+              margin-left: 0.5rem; /* Add some margin between cards instead of space-x-4 */
+              margin-right: 0.5rem;
+          }
+          #main-promo-card:first-child {
+              margin-left: 1rem; /* Ensure the first card has padding from the left edge */
+          }
+          #main-promo-anak-metal-card:last-child {
+              margin-right: 1rem; /* Ensure the last card has padding from the right edge */
           }
       }
   </style>
