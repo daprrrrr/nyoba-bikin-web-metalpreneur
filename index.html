@@ -863,7 +863,7 @@
             description: "Jas Laboratorium berkualitas tinggi, dengan berbasis bahan american drill yang ketika dipakai akan terasa nyaman dan tidak panas. Wajib bagi setiap mahasiswa Metalurgi pada saat praktikum. Dilengkapi dengan bordir nama pada sisi kanan dan logo IMMt pada sisi kiri dada.",
             image: "assets/jaslab-1.jpg",
             hasSizes: true,
-            sizes: ["S", "M", "L", "XL", "XXL"],
+            sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"], // Added more sizes
             detailImages: [
               "assets/jaslab-1.jpg",
               "assets/jaslab-2.jpg",
@@ -961,7 +961,7 @@
           {
             id: 8,
             name: "Paket Alat Gamtek",
-            price: 200000,
+            price: 250000,
             description: "Paket lengkap alat gambar teknik untuk menunjang kebutuhan perkuliahan Anda ketika menghadapi mata kuliah gambar teknik!<br>Paket Gamtek Berisikan :<br>1. Tabung Gamtek 64 CM<br>2. Penggaris<br>3. Penggaris MOR<br>4. Penghapus<br>5. Mal Huruf 3 & 6 mm<br>6. Mal lingkaran<br>7. Pensil Mekanik 0.5 & 0.7<br> 8. Isi Pensil 0.5 & 0.7<br> 9. Jangka<br>10. Buku Gambar A3<br> 11. Buku MM Block",
             image: "assets/gamtek-1.jpg",
             hasSizes: false,
@@ -1096,9 +1096,23 @@
             currency: "IDR",
             minimumFractionDigits: 0,
           }).format(n);
-        const calculatePrice = (basePrice, size) =>
-          basePrice +
-          ((["XL", "XXL", "3XL", "4XL", "5XL"].indexOf(size) + 1) * 5000 || 0);
+        
+        // Updated calculatePrice function based on new pricing logic
+        const calculatePrice = (basePrice, size) => {
+            let price = basePrice;
+            const sizeIncrements = {
+                "S": 0, "M": 0, "L": 0,
+                "XL": 1, "XXL": 2, "3XL": 3, "4XL": 4, "5XL": 5
+            };
+            const incrementAmount = 10000; // Harga tambahan per kenaikan ukuran dari XL
+
+            const sizeIndex = sizeIncrements[size];
+
+            if (sizeIndex > 0) { // Hanya berlaku jika ukuran adalah XL atau lebih besar
+                price = basePrice + (sizeIndex * incrementAmount);
+            }
+            return price;
+        };
 
         // Fungsi untuk mengaktifkan/menonaktifkan visibilitas modal dan mengelola scroll body
         const toggleModal = (modal, show) => {
@@ -1990,7 +2004,10 @@
                 const stickerMobilProduct = allProducts.find(p => p.id === 5);
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
-                const jaslabPriceWithBundleDiscount = calculatePrice(jaslabProduct.price, promoJaslabMabaSize) - BUNDLE_DISCOUNT;
+                // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
+                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabMabaSize);
+                const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
+                
                 const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize);
                 const gamtekPrice = gamtekProduct.price;
                 const keychainImmtPrice = keychainImmtProduct.price;
@@ -2008,7 +2025,7 @@
                     { id: stickerMobilProduct.id, name: stickerMobilProduct.name, size: null, option: "Stiker Metalurgi", quantity: 1, price: stickerMobilPrice }
                 ];
 
-                // Calculate the total discounted price for the bundle item
+                // Hitung total harga bundle dari detail item yang sudah didiskon
                 const totalBundlePrice = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
                 const bundleCartItem = {
@@ -2040,7 +2057,10 @@
                 const keychainImmtProduct = allProducts.find(p => p.id === 6);
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
-                const jaslabPriceWithBundleDiscount = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize) - BUNDLE_DISCOUNT;
+                // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
+                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize);
+                const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
+
                 const topiImmtPrice = topiImmtProduct.price;
                 const keychainImmtPrice = keychainImmtProduct.price;
 
@@ -2051,7 +2071,7 @@
                     { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Akrilik", quantity: 1, price: keychainImmtPrice }
                 ];
 
-                // Calculate the total discounted price for the bundle item
+                // Hitung total harga bundle dari detail item yang sudah didiskon
                 const totalBundlePrice = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
                 const bundleCartItem = {
