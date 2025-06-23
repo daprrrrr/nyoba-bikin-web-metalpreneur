@@ -285,20 +285,27 @@
                 </p>
                 <div class="mb-4">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab:</p>
-                    <div id="bundle-jaslab-size-options" class="flex flex-wrap gap-3">
+                    <div id="bundle-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Jaslab akan dirender di sini -->
                     </div>
+                    <p id="bundle-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
                 </div>
                 <div class="mt-4 mb-6">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt KP:</p>
-                    <div id="bundle-workshirt-kp-size-options" class="flex flex-wrap gap-3">
+                    <div id="bundle-workshirt-kp-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Workshirt KP akan dirender di sini -->
                     </div>
+                    <p id="bundle-workshirt-kp-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
                 </div>
             </div>
-            <button id="add-bundle-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-6" disabled>
-                Tambahkan Bundle ke Keranjang
-            </button>
+            <div class="mt-auto pt-4 border-t">
+                <p class="text-lg text-gray-600">Harga Normal: <s id="bundle-normal-price" class="text-red-500">Rp 0</s></p>
+                <p class="text-2xl font-bold text-green-600">Harga Bundle: <span id="bundle-discounted-price">Rp 0</span></p>
+                <p class="text-sm text-green-700 mt-1" id="bundle-savings-message">Pilih ukuran untuk melihat penghematan!</p>
+                <button id="add-bundle-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-4" disabled>
+                    Tambahkan Bundle ke Keranjang
+                </button>
+            </div>
         </div>
         <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="bundle-promo-modal">
             <i class="w-6 h-6" data-lucide="x"></i>
@@ -874,7 +881,16 @@
 
           // New for "Nama untuk Bordir"
           bordirNameContainer: document.getElementById("bordir-name-container"),
+
+          // New for bundle price display
+          bundleJaslabPrice: document.getElementById("bundle-jaslab-price"),
+          bundleWorkshirtKpPrice: document.getElementById("bundle-workshirt-kp-price"),
+          bundleNormalPrice: document.getElementById("bundle-normal-price"),
+          bundleDiscountedPrice: document.getElementById("bundle-discounted-price"),
+          bundleSavingsMessage: document.getElementById("bundle-savings-message"),
         };
+
+        const BUNDLE_DISCOUNT = 15000; // Define the discount amount for the bundle
 
         const formatCurrency = (n) =>
           new Intl.NumberFormat("id-ID", {
@@ -920,7 +936,7 @@
                         }">
                             <img src="${product.image}" alt="${
               product.name
-            }" class="w-full h-full object-cover pointer-events-none" onerror="this.onerror=null; this.src='https://placehold.co/600x600/cccccc/ffffff?text=Gambar+Error';">
+            }" class="w-full h-full object-cover pointer-events-none" onerror="this.onerror=null; this.src='assets/placeholder.png';">
                             <div class="p-6 flex-grow flex flex-col pointer-events-none">
                                 <div class="flex-grow">
                                     <h3 class="text-xl font-bold text-gray-800 mb-2">${
@@ -978,18 +994,21 @@
           lucide.createIcons();
         };
 
-        const addToCart = (productId, size = null, option = null, quantity = 1) => {
+        const addToCart = (productId, size = null, option = null, quantity = 1, isBundleItem = false) => {
           const product = products.find((p) => p.id === productId);
           let finalPrice = product.price;
-
-          // No 10% discount for Jaslab (ID 1) as per revision 1
-          // if (productId === 1 && (promoJaslabSize || currentDetailProduct?.id === 1)) {
-          //     finalPrice = product.price * 0.90; // Diskon 10%
-          // }
 
           if (product.hasSizes) {
             finalPrice = calculatePrice(finalPrice, size);
           }
+          
+          // Apply bundle discount only to Jaslab (ID 1) when added as part of a bundle
+          // Distribute the BUNDLE_DISCOUNT among items as needed, here it's applied fully to Jaslab for simplicity
+          if (isBundleItem && productId === 1) {
+              finalPrice -= BUNDLE_DISCOUNT;
+              if (finalPrice < 0) finalPrice = 0; // Ensure price doesn't go negative
+          }
+
 
           // Use option in cartItemId for products with options
           const cartItemId = (size ? `${productId}-${size}` : `${productId}`) + (option ? `-${option}` : '');
@@ -1074,7 +1093,7 @@
             currentDetailProduct.detailImages[currentImageIndex];
           dom.mainProductImage.onerror = () => {
             dom.mainProductImage.src =
-              "https://placehold.co/800x800/cccccc/ffffff?text=Gambar+Error";
+              "assets/placeholder.png";
           };
           dom.thumbnailContainer.innerHTML = "";
           currentDetailProduct.detailImages.forEach((imgSrc, index) => {
@@ -1127,6 +1146,45 @@
           }
           dom.detailActionContainer.innerHTML = cartHtml;
           lucide.createIcons();
+        };
+
+        // Function to update bundle prices and savings message
+        const updateBundlePrices = () => {
+            const jaslabProduct = products.find(p => p.id === 1);
+            const workshirtKpProduct = products.find(p => p.id === 2);
+            const gamtekProduct = products.find(p => p.id === 8);
+
+            let currentJaslabPrice = 0;
+            if (promoJaslabSize) {
+                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabSize);
+                dom.bundleJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+            } else {
+                dom.bundleJaslabPrice.textContent = 'Pilih Ukuran';
+            }
+
+            let currentWorkshirtKpPrice = 0;
+            if (promoWorkshirtKpSize) {
+                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
+                dom.bundleWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
+            } else {
+                dom.bundleWorkshirtKpPrice.textContent = 'Pilih Ukuran';
+            }
+
+            const gamtekPrice = gamtekProduct.price;
+            const totalNormalBundlePrice = (promoJaslabSize ? currentJaslabPrice : 0) + (promoWorkshirtKpSize ? currentWorkshirtKpPrice : 0) + gamtekPrice;
+            const discountedBundlePrice = totalNormalBundlePrice > BUNDLE_DISCOUNT ? totalNormalBundlePrice - BUNDLE_DISCOUNT : 0;
+            const savings = totalNormalBundlePrice - discountedBundlePrice;
+
+            dom.bundleNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
+            dom.bundleDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+
+            if (promoJaslabSize && promoWorkshirtKpSize) {
+                dom.bundleSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
+                dom.addBundleToCartBtn.disabled = false;
+            } else {
+                dom.bundleSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
+                dom.addBundleToCartBtn.disabled = true;
+            }
         };
 
 
@@ -1406,17 +1464,13 @@
               dom.bundleJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
               e.target.classList.add("bg-green-600", "text-white");
               promoJaslabSize = e.target.dataset.size;
-              if (promoJaslabSize && promoWorkshirtKpSize) {
-                  dom.addBundleToCartBtn.disabled = false;
-              }
+              updateBundlePrices();
           }
           if (e.target.matches('#bundle-workshirt-kp-size-options .size-btn')) {
               dom.bundleWorkshirtKpSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
               e.target.classList.add("bg-green-600", "text-white");
               promoWorkshirtKpSize = e.target.dataset.size;
-              if (promoJaslabSize && promoWorkshirtKpSize) {
-                  dom.addBundleToCartBtn.disabled = false;
-              }
+              updateBundlePrices();
           }
         });
 
@@ -1550,6 +1604,7 @@
                     
                     promoJaslabSize = null; // Reset pilihan
                     promoWorkshirtKpSize = null; // Reset pilihan
+                    updateBundlePrices(); // Update prices for the first time
                     dom.addBundleToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
 
                     toggleModal(dom.bundlePromoModal, true);
@@ -1563,9 +1618,22 @@
         // Handle adding the entire bundle to cart
         dom.addBundleToCartBtn.addEventListener('click', () => {
             if (promoJaslabSize && promoWorkshirtKpSize) {
-                addToCart(1, promoJaslabSize); // Jaslab
-                addToCart(2, promoWorkshirtKpSize); // Workshirt KP
-                addToCart(8); // Gamtek
+                // Determine the discounted price for Jaslab to ensure total bundle discount
+                const jaslabProduct = products.find(p => p.id === 1);
+                const workshirtKpProduct = products.find(p => p.id === 2);
+                const gamtekProduct = products.find(p => p.id === 8);
+
+                const currentJaslabBasePrice = calculatePrice(jaslabProduct.price, promoJaslabSize);
+                const currentWorkshirtKpBasePrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
+                const gamtekBasePrice = gamtekProduct.price;
+
+                const totalNormalBundlePrice = currentJaslabBasePrice + currentWorkshirtKpBasePrice + gamtekBasePrice;
+                const discountedJaslabPrice = currentJaslabBasePrice - BUNDLE_DISCOUNT; // Apply full discount to Jaslab
+
+                addToCart(1, promoJaslabSize, null, 1, true); // Jaslab with discount flag
+                addToCart(2, promoWorkshirtKpSize, null, 1, false); // Workshirt KP
+                addToCart(8, null, null, 1, false); // Gamtek
+                
                 toggleModal(dom.bundlePromoModal, false);
                 toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
                 showCustomAlert("Jaslab, Workshirt KP, dan Paket Alat Gamtek telah ditambahkan ke keranjang Anda!");
