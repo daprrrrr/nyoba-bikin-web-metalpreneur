@@ -1098,13 +1098,25 @@
           }).format(n);
         
         // Updated calculatePrice function based on new pricing logic
-        const calculatePrice = (basePrice, size) => {
+        const calculatePrice = (basePrice, size, productId = null) => {
             let price = basePrice;
             const sizeIncrements = {
                 "S": 0, "M": 0, "L": 0,
                 "XL": 1, "XXL": 2, "3XL": 3, "4XL": 4, "5XL": 5
             };
-            const incrementAmount = 10000; // Harga tambahan per kenaikan ukuran dari XL
+            
+            let incrementAmount = 0;
+
+            // Apply specific increment amounts based on productId
+            if (productId === 1) { // Jas laboratorium
+                incrementAmount = 10000;
+            } else if (productId === 2) { // Workshirt Kerja Praktik
+                incrementAmount = 5000;
+            }
+            // Add more product-specific increment amounts here if needed
+            // else {
+            //     incrementAmount = 0; // Default or no increment
+            // }
 
             const sizeIndex = sizeIncrements[size];
 
@@ -1240,7 +1252,7 @@
         };
 
         const addToCart = (productId, size = null, option = null, quantity = 1, isBundleItem = false) => {
-          const product = products.find((p) => p.id === productId);
+          const product = allProducts.find((p) => p.id === productId); // Use allProducts here to get correct product details
           if (!product) {
               console.error(`Product with ID ${productId} not found.`);
               return;
@@ -1248,7 +1260,7 @@
           let finalPrice = product.price;
 
           if (product.hasSizes && size) {
-            finalPrice = calculatePrice(finalPrice, size);
+            finalPrice = calculatePrice(finalPrice, size, productId); // Pass productId to calculatePrice
           }
           
           // This addToCart is for individual items. Bundles are handled separately
@@ -1290,7 +1302,7 @@
         };
 
         const openProductDetail = (productId) => {
-          currentDetailProduct = products.find((p) => p.id === productId);
+          currentDetailProduct = allProducts.find((p) => p.id === productId); // Use allProducts here
           if (!currentDetailProduct) return;
           selectedSize = null;
           selectedOption = null; // Reset selected option
@@ -1415,7 +1427,7 @@
 
             let currentJaslabPrice = 0;
             if (promoJaslabMabaSize) {
-                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize);
+                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
                 dom.bundleMabaJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
             } else {
                 dom.bundleMabaJaslabPrice.textContent = 'Pilih Ukuran';
@@ -1423,7 +1435,7 @@
 
             let currentWorkshirtKpPrice = 0;
             if (promoWorkshirtKpMabaSize) {
-                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize);
+                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
                 dom.bundleMabaWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
             } else {
                 dom.bundleMabaWorkshirtKpPrice.textContent = 'Pilih Ukuran';
@@ -1459,7 +1471,7 @@
 
             let currentJaslabPrice = 0;
             if (promoJaslabAnakMetalSize) {
-                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize);
+                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
                 dom.bundleAnakMetalJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
             } else {
                 dom.bundleAnakMetalJaslabPrice.textContent = 'Pilih Ukuran';
@@ -1792,7 +1804,8 @@
             selectedSize = e.target.dataset.size;
             const price = calculatePrice(
               currentDetailProduct.price,
-              selectedSize
+              selectedSize,
+              currentDetailProduct.id // Pass productId to calculatePrice
             );
             dom.detailProductPrice.textContent = formatCurrency(price);
             renderDetailActionButtons(); // Re-render button to enable quantity if a size is selected
@@ -2005,10 +2018,10 @@
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
                 // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
-                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabMabaSize);
+                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
                 const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
                 
-                const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize);
+                const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
                 const gamtekPrice = gamtekProduct.price;
                 const keychainImmtPrice = keychainImmtProduct.price;
                 const keychainMakaraPrice = keychainMakaraProduct.price;
@@ -2058,7 +2071,7 @@
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
                 // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
-                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize);
+                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
                 const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
 
                 const topiImmtPrice = topiImmtProduct.price;
