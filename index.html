@@ -154,6 +154,9 @@
           max-height: unset; /* Menghilangkan batasan tinggi */
           position: relative;
           z-index: 60; /* Higher than other modals to ensure it's on top if active */
+          /* Mengatur agar konten modal memiliki tata letak flexbox vertikal */
+          display: flex;
+          flex-direction: column;
       }
       .product-overview-modal-overlay {
           position: fixed;
@@ -185,11 +188,28 @@
           color: #000;
           z-index: 70;
       }
+      .product-overview-modal-content h2 {
+          /* Judul akan tetap di atas saat konten di bawahnya digulir */
+          position: sticky;
+          top: 0;
+          background-color: white; /* Memberikan latar belakang agar judul menutupi konten di bawahnya */
+          z-index: 10; /* Memastikan judul berada di atas item yang digulir */
+          padding-bottom: 1rem; /* Tambahkan padding di bawah judul */
+          padding-top: 0.5rem; /* Tambahkan padding di atas judul */
+          margin-top: -1.5rem; /* Sesuaikan dengan padding modal-content untuk menutupi penuh */
+          margin-left: -1.5rem;
+          margin-right: -1.5rem;
+          width: calc(100% + 3rem); /* Sesuaikan lebar agar menutupi lebar penuh modal */
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Bayangan tipis untuk memisahkan judul */
+      }
       .product-overview-grid {
           display: flex; /* Menggunakan flexbox untuk tata letak horizontal */
           gap: 1rem;
-          /* Menjamin lebar minimum untuk setiap item agar tidak terlalu menyempit */
-          min-width: fit-content;
+          overflow-x: auto; /* Memungkinkan gulir horizontal */
+          -webkit-overflow-scrolling: touch; /* Mengaktifkan gulir yang mulus di iOS */
+          padding-bottom: 1rem; /* Memberikan ruang untuk scrollbar jika muncul */
+          flex-grow: 1; /* Memungkinkan grid mengisi ruang yang tersedia dan digulir */
+          align-items: flex-start; /* Memastikan item promo rata atas jika tingginya berbeda */
       }
       .product-overview-item {
           background-color: #f0fdf4; /* A light green */
@@ -200,8 +220,9 @@
           cursor: pointer;
           transform: scale(1);
           transition: transform 0.2s ease-in-out;
-          flex-shrink: 0; /* Mencegah item menyusut */
-          width: 200px; /* Lebar tetap untuk setiap item */
+          flex-shrink: 0; /* Mencegah item menyusut agar lebar aslinya tetap */
+          width: 250px; /* Lebar tetap untuk setiap item promo */
+          max-width: 90vw; /* Untuk memastikan tidak terlalu lebar di layar yang sangat kecil */
       }
       .product-overview-item:hover {
           transform: scale(1.02);
@@ -251,7 +272,6 @@
           .product-overview-modal-overlay {
               align-items: flex-start; /* Align to top */
               padding-top: 2rem; /* Add some padding from the top */
-              /* Removed overflow-x:hidden from here */
               overflow-x: hidden; /* Ensure overlay itself doesn't scroll horizontally */
           }
           .product-overview-modal-content {
@@ -260,24 +280,6 @@
               overflow-y: auto; /* Allow vertical scrolling for the entire content of the modal */
               overflow-x: hidden; /* Ensure modal content doesn't scroll horizontally */
               max-height: 90vh; /* Limit height to prevent modal from taking full screen */
-          }
-          .product-overview-modal-content h2 {
-              position: sticky; /* Make the headline sticky */
-              top: 0;
-              background-color: white; /* Ensure background to cover scrolling content */
-              z-index: 10; /* Keep it above scrolling items, higher than items */
-              padding-bottom: 1rem; /* Add some padding below the title */
-              padding-top: 0.5rem; /* Add some padding above the title */
-              margin-top: -1.5rem; /* Adjust for padding on modal-content */
-              margin-left: -1.5rem;
-              margin-right: -1.5rem;
-              width: calc(100% + 3rem); /* Adjust width to cover full modal width, accounting for padding */
-              box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-          }
-          .product-overview-grid {
-              overflow-x: auto; /* Allow horizontal scrolling only for the grid items */
-              -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-              padding-bottom: 1rem; /* Add padding for scrollbar */
           }
       }
 
