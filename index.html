@@ -100,7 +100,7 @@
 
       /* Custom styles for Shopee-like header */
       .shopee-header {
-        background-color: #000000; 
+        background-color: #059669; /* Green accent */
         color: white;
         padding: 0.75rem 1rem; /* Adjust padding */
       }
@@ -152,7 +152,7 @@
           border-radius: 1rem;
           padding: 1.5rem;
           /* Mengubah max-width dan menghilangkan max-height agar bisa melebar */
-          max-width: 90vw; /* Lebar maksimum 90% dari viewport width */
+          /* max-width: 90vw; ini akan diatur ulang di @media untuk mobile */
           max-height: unset; /* Menghilangkan batasan tinggi */
           overflow-y: hidden; /* Sembunyikan scroll vertikal */
           overflow-x: auto; /* Aktifkan scroll horizontal */
@@ -242,6 +242,46 @@
         }
       }
 
+      /* New styles for Early Bird Bundle modal images */
+      #bundle-promo-maba-modal .modal-content .grid.grid-cols-2 img,
+      #bundle-promo-anak-metal-modal .modal-content .grid.grid-cols-2 img {
+          width: 100%; /* Ensure images take full width of their grid column */
+          height: 150px; /* Set a fixed height for consistency */
+          object-fit: contain; /* Ensure the whole image is visible without cropping */
+          background-color: #f8fafc; /* Add a background color to the image area */
+      }
+
+      /* Fix for product overview modal positioning and scroll on mobile */
+      @media (max-width: 767px) { /* For mobile devices */
+          .product-overview-modal-overlay {
+              align-items: flex-start; /* Align to top */
+              padding-top: 2rem; /* Add some padding from the top */
+          }
+          .product-overview-modal-content {
+              max-width: 95vw; /* Slightly wider on mobile */
+              margin: 0 auto; /* Center the modal content */
+              overflow-y: hidden; /* Prevent vertical scrolling on the modal content itself */
+              overflow-x: hidden; /* Prevent horizontal scrolling on the modal content itself */
+          }
+          .product-overview-modal-content h2 {
+              position: sticky; /* Make the headline sticky */
+              top: 0;
+              background-color: white; /* Ensure background to cover scrolling content */
+              z-index: 1; /* Keep it above scrolling items */
+              padding-bottom: 1rem; /* Add some padding below the title */
+              padding-top: 0.5rem; /* Add some padding above the title */
+              margin-top: -1.5rem; /* Adjust for padding on modal-content */
+              margin-left: -1.5rem;
+              margin-right: -1.5rem;
+              width: calc(100% + 3rem); /* Adjust width to cover full modal width */
+              box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
+          }
+          .product-overview-grid {
+              overflow-x: auto; /* Allow horizontal scrolling only for the grid items */
+              -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+              padding-bottom: 1rem; /* Add padding for scrollbar */
+          }
+      }
   </style>
  </head>
  <body class="antialiased text-gray-800">
@@ -288,9 +328,7 @@
             <h3 class="text-xl font-bold text-gray-800 mb-4">Apa yang Anda Dapatkan:</h3>
             <div class="grid grid-cols-2 gap-4">
                 <img src="assets/jaslab-1.jpg" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
-                <img src="assets/size-chart-a.JPG" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/workshirt-kp-1.jpg" alt="Workshirt KP" class="w-full h-auto object-contain rounded-lg shadow-md">
-                <img src="assets/size-chart-b.jpg" alt="Workshirt KP" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/gamtek-1.jpg" alt="Paket Alat Gamtek" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/keychain-immt-1.jpg" alt="Keychain IMMt 1" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/keychain-immt-2.jpg" alt="Keychain IMMt 2" class="w-full h-auto object-contain rounded-lg shadow-md">
@@ -342,7 +380,6 @@
             <h3 class="text-xl font-bold text-gray-800 mb-4">Apa yang Anda Dapatkan:</h3>
             <div class="grid grid-cols-2 gap-4">
                 <img src="assets/jaslab-1.jpg" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
-                <img src="assets/size-chart-a.JPG" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/topi-immt-1.jpg" alt="Topi IMMt" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/keychain-immt-1.jpg" alt="Keychain IMMt 1" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/keychain-immt-2.jpg" alt="Keychain IMMt 2" class="w-full h-auto object-contain rounded-lg shadow-md">
@@ -746,7 +783,7 @@
         };
 
         // Kunci Konfigurasi Cloudinary Anda (GANTI DENGAN KUNCI ANDA SENDIRI!)
-        // Anda perlu membuat akun Cloudinary GRATIS dan mendapatkan ini.
+        // Anda perlu membuat akun Cloudinary GRATI dan mendapatkan ini.
         // Upload Preset harus diatur sebagai "Unsigned" di dashboard Cloudinary Anda.
         const CLOUDINARY_CLOUD_NAME = 'dmqznikmw'; // Contoh: 'my-shop-cloud'
         const CLOUDINARY_UPLOAD_PRESET = 'bukti_pembayaran_uploads'; // Contoh: 'unsigned_uploads'
