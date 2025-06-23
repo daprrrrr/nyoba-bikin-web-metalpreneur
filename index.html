@@ -55,7 +55,23 @@
         background-image: url("assets/bg-shop.jpg"); /* Reverted to original asset path */
         background-size: cover;
         background-position: center;
+        /* Tambahan untuk responsivitas gambar latar belakang */
+        background-repeat: no-repeat;
+        background-attachment: scroll; /* Menggulir bersama konten */
       }
+      @media (min-width: 768px) { /* Untuk desktop */
+        .hero-section {
+          background-size: 100% auto; /* Lebar penuh, tinggi menyesuaikan */
+          background-position: center;
+        }
+      }
+      @media (max-width: 767px) { /* Untuk mobile */
+        .hero-section {
+          background-size: cover; /* Menutupi area, bisa terpotong sedikit */
+          background-position: center center;
+        }
+      }
+
       .hero-section::before {
         content: "";
         position: absolute;
@@ -764,8 +780,7 @@
       </p>
       <div class="bg-gray-200 my-4 w-64 h-64 flex items-center justify-center rounded-md">
        <span class="text-gray-500 text-center">
-        [Image of QRIS]
-       </span>
+               </span>
       </div>
       <div class="bg-red-100 text-red-700 font-bold p-3 rounded-lg">
        <span>
@@ -830,7 +845,7 @@
         // Firebase Storage tidak lagi digunakan secara langsung
 
 
-        const products = [
+        const allProducts = [
           {
             id: 1,
             name: "Jaslab",
@@ -844,6 +859,8 @@
               "assets/jaslab-2.jpg",
               "assets/size-chart-a.jpg",
             ],
+            // Tambahkan property `inBundle` jika produk ini selalu dijual dalam bundle
+            inBundle: true,
           },
           {
             id: 2,
@@ -858,6 +875,7 @@
               "assets/workshirt-kp-2.jpg",
               "assets/size-chart-b.jpg",
             ],
+            inBundle: true,
           },
           {
             id: 3,
@@ -872,6 +890,7 @@
               "assets/workshirt-metal-2.jpg",
               "assets/size-chart-c.jpg",
             ],
+            inBundle: false, // Tidak ada dalam bundle yang ada
           },
           {
             id: 4,
@@ -885,6 +904,7 @@
               "assets/sticker-pack-2.jpg",
               "assets/sticker-pack-3.jpg",
             ],
+            inBundle: false, // Tidak ada dalam bundle yang ada
           },
           {
             id: 5,
@@ -899,6 +919,7 @@
               "assets/sticker-mobil-1.jpg",
               "assets/sticker-mobil-2.jpg",
             ],
+            inBundle: true,
           },
           {
             id: 6,
@@ -914,6 +935,7 @@
               "assets/keychain-immt-2.jpg",
               "assets/keychain-immt-3.jpg",
             ],
+            inBundle: true,
           },
           {
             id: 7,
@@ -927,6 +949,7 @@
               "assets/keychain-makara-2.jpg",
               "assets/keychain-makara-3.jpg",
             ],
+            inBundle: true,
           },
           {
             id: 8,
@@ -940,6 +963,7 @@
               "assets/gamtek-2.jpg",
               "assets/gamtek-3.jpg",
             ],
+            inBundle: true,
           },
           { // New Product: Topi
             id: 9,
@@ -952,8 +976,12 @@
               "assets/topi-immt-1.jpg",
               "assets/topi-immt-2.jpg",
             ],
+            inBundle: true,
           },
         ];
+
+        // Filter produk, hanya tampilkan yang memiliki properti `inBundle: true`
+        const products = allProducts.filter(product => product.inBundle);
 
         let cart = [];
         let currentDetailProduct = null;
@@ -1347,12 +1375,12 @@
 
         // Function to update bundle prices and savings message for Early Bird Maba
         const updateBundleMabaPrices = () => {
-            const jaslabProduct = products.find(p => p.id === 1);
-            const workshirtKpProduct = products.find(p => p.id === 2);
-            const gamtekProduct = products.find(p => p.id === 8);
-            const keychainImmtProduct = products.find(p => p.id === 6);
-            const keychainMakaraProduct = products.find(p => p.id === 7);
-            const stickerMobilProduct = products.find(p => p.id === 5);
+            const jaslabProduct = allProducts.find(p => p.id === 1);
+            const workshirtKpProduct = allProducts.find(p => p.id === 2);
+            const gamtekProduct = allProducts.find(p => p.id === 8);
+            const keychainImmtProduct = allProducts.find(p => p.id === 6);
+            const keychainMakaraProduct = allProducts.find(p => p.id === 7);
+            const stickerMobilProduct = allProducts.find(p => p.id === 5);
 
             let currentJaslabPrice = 0;
             if (promoJaslabMabaSize) {
@@ -1382,20 +1410,21 @@
             dom.bundleMabaNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
             dom.bundleMabaDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
 
+            // Enable/disable add to cart button based on size selections
             if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
-                dom.bundleMabaSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
                 dom.addBundleMabaToCartBtn.disabled = false;
+                dom.bundleMabaSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
             } else {
-                dom.bundleMabaSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
                 dom.addBundleMabaToCartBtn.disabled = true;
+                dom.bundleMabaSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
             }
         };
 
         // Function to update bundle prices and savings message for Gue Anak Metal!
         const updateBundleAnakMetalPrices = () => {
-            const jaslabProduct = products.find(p => p.id === 1);
-            const topiImmtProduct = products.find(p => p.id === 9);
-            const keychainImmtProduct = products.find(p => p.id === 6);
+            const jaslabProduct = allProducts.find(p => p.id === 1);
+            const topiImmtProduct = allProducts.find(p => p.id === 9);
+            const keychainImmtProduct = allProducts.find(p => p.id === 6);
 
             let currentJaslabPrice = 0;
             if (promoJaslabAnakMetalSize) {
@@ -1415,12 +1444,13 @@
             dom.bundleAnakMetalNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
             dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
 
+            // Enable/disable add to cart button based on size selections
             if (promoJaslabAnakMetalSize) {
-                dom.bundleAnakMetalSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
                 dom.addBundleAnakMetalToCartBtn.disabled = false;
+                dom.bundleAnakMetalSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
             } else {
-                dom.bundleAnakMetalSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
                 dom.addBundleAnakMetalToCartBtn.disabled = true;
+                dom.bundleAnakMetalSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
             }
         };
 
@@ -1660,10 +1690,12 @@
             // Check if any product requiring embroidery (Jaslab or Workshirts) is in the flattened bundle details
             for (const item of cart) {
                 if (item.isBundle) {
+                    // Cek di bundleDetails produk yang dijual secara individual yang memiliki bordir
                     if (item.bundleDetails.some(detail => detail.id === 1 || detail.id === 2 || detail.id === 3)) {
                         return true;
                     }
                 } else {
+                    // Cek produk individual yang memiliki bordir
                     if (item.id === 1 || item.id === 2 || item.id === 3) {
                         return true;
                     }
@@ -1878,8 +1910,8 @@
 
                 if (promoId === 'maba') {
                     // Buka modal bundle promo Maba
-                    const jaslabProduct = products.find(p => p.id === 1);
-                    const workshirtKpProduct = products.find(p => p.id === 2);
+                    const jaslabProduct = allProducts.find(p => p.id === 1);
+                    const workshirtKpProduct = allProducts.find(p => p.id === 2);
 
                     if (jaslabProduct && workshirtKpProduct) {
                         dom.bundleMabaJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
@@ -1898,7 +1930,7 @@
                     }
                 } else if (promoId === 'anak-metal') {
                     // Buka modal bundle promo Anak Metal
-                    const jaslabProduct = products.find(p => p.id === 1);
+                    const jaslabProduct = allProducts.find(p => p.id === 1);
 
                     if (jaslabProduct) {
                         dom.bundleAnakMetalJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
@@ -1923,12 +1955,12 @@
         // Handle adding the Early Bird Maba bundle to cart
         dom.addBundleMabaToCartBtn.addEventListener('click', () => {
             if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
-                const jaslabProduct = products.find(p => p.id === 1);
-                const workshirtKpProduct = products.find(p => p.id === 2);
-                const gamtekProduct = products.find(p => p.id === 8);
-                const keychainImmtProduct = products.find(p => p.id === 6);
-                const keychainMakaraProduct = products.find(p => p.id === 7);
-                const stickerMobilProduct = products.find(p => p.id === 5);
+                const jaslabProduct = allProducts.find(p => p.id === 1);
+                const workshirtKpProduct = allProducts.find(p => p.id === 2);
+                const gamtekProduct = allProducts.find(p => p.id === 8);
+                const keychainImmtProduct = allProducts.find(p => p.id === 6);
+                const keychainMakaraProduct = allProducts.find(p => p.id === 7);
+                const stickerMobilProduct = allProducts.find(p => p.id === 5);
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
                 const jaslabPriceWithBundleDiscount = calculatePrice(jaslabProduct.price, promoJaslabMabaSize) - BUNDLE_DISCOUNT;
@@ -1976,9 +2008,9 @@
         // Handle adding the Gue Anak Metal! bundle to cart
         dom.addBundleAnakMetalToCartBtn.addEventListener('click', () => {
             if (promoJaslabAnakMetalSize) {
-                const jaslabProduct = products.find(p => p.id === 1);
-                const topiImmtProduct = products.find(p => p.id === 9);
-                const keychainImmtProduct = products.find(p => p.id === 6);
+                const jaslabProduct = allProducts.find(p => p.id === 1);
+                const topiImmtProduct = allProducts.find(p => p.id === 9);
+                const keychainImmtProduct = allProducts.find(p => p.id === 6);
 
                 // Calculate individual item prices for bundleDetails, with Jaslab discount applied
                 const jaslabPriceWithBundleDiscount = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize) - BUNDLE_DISCOUNT;
@@ -2019,6 +2051,7 @@
         // Fungsionalitas Pencarian
         dom.searchInput.addEventListener("input", (e) => {
             const searchTerm = e.target.value.toLowerCase();
+            // Filter hanya produk yang sudah ditandai `inBundle: true`
             filteredProducts = products.filter(product =>
                 product.name.toLowerCase().includes(searchTerm)
             );
