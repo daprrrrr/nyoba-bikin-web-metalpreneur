@@ -509,6 +509,12 @@
      </p>
     </div>
    </section>
+   <!-- New Headline Section for Bundles -->
+   <section class="container mx-auto mt-8 mb-4 px-4 text-center">
+       <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+           Bundle yang kami tawarkan dengan harga yang sangat terjangkau
+       </h2>
+   </section>
    <section class="container mx-auto mt-8 mb-12 px-4">
     <div class="overflow-x-auto whitespace-nowrap scrollbar-hide">
      <div class="flex space-x-4 justify-center">
@@ -733,6 +739,10 @@
           <span class="text-sm font-medium text-gray-700">Kode Pos*</span>
           <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" name="Kode Pos" type="text"/>
         </label>
+        <!-- Ongkos kirim disclaimer -->
+        <p class="text-sm text-gray-500 mt-4">
+            Mohon diperhatikan bahwa harga yang tertera belum termasuk ongkos kirim. Biaya pengiriman akan menjadi tanggung jawab pembeli dan akan diinformasikan kemudian.
+        </p>
       </div>
      </div>
      <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700" type="submit">
@@ -1544,6 +1554,14 @@
             customerData[key] = value;
             dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
           });
+          // Add shipping cost disclaimer if "Dikirim ke Alamat" was selected
+          if (customerData.Pengiriman === "Dikirim ke Alamat") {
+              dom.customerDataSummary.innerHTML += `
+                  <div class="text-xs text-gray-500 mt-2">
+                      <p>Mohon diperhatikan bahwa harga di atas belum termasuk biaya pengiriman. Estimasi biaya pengiriman akan diinformasikan kemudian dan akan menjadi tanggung jawab pembeli. Terima kasih atas pengertian Anda.<br><br>Pengiriman dilakukan dari Kampus Universitas Indonesia </p>
+                  </div>
+              `;
+          }
         };
 
         // Fungsi untuk mengunggah bukti pembayaran ke Cloudinary
@@ -2040,7 +2058,7 @@
                     cartItemId: 'bundle-gue-anak-metal', // Unique ID for this bundle type in cart
                     id: 'bundle-gue-anak-metal-id', // Generic ID for bundle recognition
                     name: 'Gue Anak Metal! Bundle',
-                    image: 'assets/promo-anak-metal.jpg',
+                    image: 'assets/promo-anak-metal-1.jpg',
                     quantity: 1,
                     finalPrice: totalBundlePrice, // This is the total price displayed in cart
                     isBundle: true,
@@ -2049,7 +2067,7 @@
                 cart.push(bundleCartItem);
                 updateUI(); // Memanggil updateUI untuk memperbarui tampilan keranjang
                 
-                toggleModal(dom.bundleAnakMetalModal, false);
+                toggleModal(dom.bundlePromoAnakMetalModal, false); // Tutup modal Anak Metal
                 toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
                 showCustomAlert("Bundle Gue Anak Metal! telah ditambahkan ke keranjang Anda!");
             } else {
