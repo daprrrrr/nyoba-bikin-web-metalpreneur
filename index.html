@@ -234,19 +234,6 @@
       .hover\:bg-indigo-700:hover { background-color: #047857 !important; }
       .focus\:ring-indigo-500:focus { box-shadow: 0 0 0 2px #047857 !important; }
 
-      
-.product-overview-modal-close-btn {
-    position: absolute;
-    top: -1rem;
-    right: -1rem;
-    background: white;
-    border-radius: 9999px;
-    padding: 0.5rem;
-    font-size: 2rem;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-
       /* Adjusted width for main promo card on desktop */
       @media (min-width: 1024px) { /* lg breakpoint */
         #main-promo-card {
@@ -261,7 +248,7 @@
   <div class="product-overview-modal-overlay" id="product-overview-modal">
    <div class="product-overview-modal-content">
     <button class="product-overview-modal-close-btn" id="close-product-overview-modal">
-     <i data-lucide="x-circle" class="w-8 h-8">
+     <i data-lucide="x-circle">
      </i>
     </button>
     <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">
@@ -278,10 +265,6 @@
       </p>
       <p class="product-overview-price">
       </p>
-<p class="flex items-center justify-center text-green-700 font-semibold mt-2">
-  <i data-lucide="gift" class="w-5 h-5 mr-2"></i> Promo Terbatas!
-</p>
-
      </div>
      <div class="product-overview-item" id="promo-anak-metal-card" data-promo-id="anak-metal">
         <img alt="Promo Gue Anak Metal" class="w-full h-40 object-cover" src="assets/promo-anak-metal.jpg"/>
@@ -293,10 +276,6 @@
         </p>
         <p class="product-overview-price">
         </p>
-<p class="flex items-center justify-center text-green-700 font-semibold mt-2">
-  <i data-lucide="gift" class="w-5 h-5 mr-2"></i> Promo Terbatas!
-</p>
-
      </div>
     </div>
    </div>
@@ -440,13 +419,13 @@
    </section>
    <section class="container mx-auto mt-8 mb-12 px-4">
     <div class="overflow-x-auto whitespace-nowrap scrollbar-hide">
-     <div class="flex space-x-4 justify-start">
+     <div class="flex space-x-4 justify-center">
       <div class="min-w-[300px] bg-green-100 text-center rounded-lg p-4 text-green-900 font-bold" id="main-promo-card" data-promo-id="maba">
-       <img class="mb-2 rounded" src="assets/promo-maba.jpg" alt="Promo Early Bird Mahasiswa Baru"/>
+       <img class="mb-2 rounded w-full h-40 object-cover aspect-video" src="assets/promo-maba.jpg" alt="Promo Early Bird Mahasiswa Baru"/>
        Early Bird Mahasiswa Baru!
       </div>
       <div class="min-w-[300px] bg-green-100 text-center rounded-lg p-4 text-green-900 font-bold" id="main-promo-anak-metal-card" data-promo-id="anak-metal">
-        <img class="mb-2 rounded" src="assets/promo-anak-metal.jpg" alt="Promo Gue Anak Metal!"/>
+        <img class="mb-2 rounded w-full h-40 object-cover aspect-video" src="assets/promo-anak-metal.jpg" alt="Promo Gue Anak Metal!"/>
         Gue Anak Metal!
        </div>
      </div>
@@ -460,7 +439,7 @@
      Temukan produk berkualitas tinggi yang kami siapkan khusus untuk Anda.
     </p>
    </section>
-   <section class="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="products-grid">
+   <section class="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="products-grid">
     </section>
    <section class="bg-white mt-16 py-16" id="about-us">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
