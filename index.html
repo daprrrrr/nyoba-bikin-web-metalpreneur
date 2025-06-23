@@ -151,9 +151,11 @@
           background-color: #fff;
           border-radius: 1rem;
           padding: 1.5rem;
-          max-width: 380px; /* Adjusted to fit one bundle */
-          max-height: 90vh;
-          overflow-y: auto;
+          /* Mengubah max-width dan menghilangkan max-height agar bisa melebar */
+          max-width: 90vw; /* Lebar maksimum 90% dari viewport width */
+          max-height: unset; /* Menghilangkan batasan tinggi */
+          overflow-y: hidden; /* Sembunyikan scroll vertikal */
+          overflow-x: auto; /* Aktifkan scroll horizontal */
           position: relative;
           z-index: 60; /* Higher than other modals to ensure it's on top if active */
       }
@@ -188,9 +190,11 @@
           z-index: 70;
       }
       .product-overview-grid {
-          display: grid;
+          display: flex; /* Menggunakan flexbox untuk tata letak horizontal */
           gap: 1rem;
-          grid-template-columns: repeat(1, 1fr); /* Always 1 column for this specific modal */
+          /* Menghilangkan grid-template-columns */
+          /* Menjamin lebar minimum untuk setiap item agar tidak terlalu menyempit */
+          min-width: fit-content;
       }
       .product-overview-item {
           background-color: #f0fdf4; /* A light green */
@@ -201,6 +205,8 @@
           cursor: pointer;
           transform: scale(1);
           transition: transform 0.2s ease-in-out;
+          flex-shrink: 0; /* Mencegah item menyusut */
+          width: 200px; /* Lebar tetap untuk setiap item */
       }
       .product-overview-item:hover {
           transform: scale(1.02);
@@ -258,56 +264,112 @@
        Dapatkan diskon khusus untuk mahasiswa baru!
       </p>
       <p class="product-overview-price">
-       Diskon 10% untuk semua produk Jaslab!
       </p>
+     </div>
+     <div class="product-overview-item" id="promo-anak-metal-card" data-promo-id="anak-metal">
+        <img alt="Promo Gue Anak Metal" class="w-full h-40 object-cover" src="assets/promo-anak-metal.jpg"/>
+        <h3 class="product-overview-title">
+         Gue Anak Metal!
+        </h3>
+        <p class="product-overview-description">
+         Tunjukkan identitasmu sebagai anak metal sejati!
+        </p>
+        <p class="product-overview-price">
+        </p>
      </div>
     </div>
    </div>
   </div>
 
-  <!-- New Bundle Promo Modal -->
-  <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="bundle-promo-modal">
+  <!-- New Bundle Promo Modal - Early Bird (Existing) -->
+  <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="bundle-promo-maba-modal">
     <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl h-full overflow-scroll flex flex-col md:flex-row">
         <div class="w-full md:w-1/2 p-4 flex flex-col items-center justify-center bg-gray-50 rounded-lg">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Apa yang Anda Dapatkan:</h3>
             <div class="grid grid-cols-2 gap-4">
                 <img src="assets/jaslab-1.jpg" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
                 <img src="assets/workshirt-kp-1.jpg" alt="Workshirt KP" class="w-full h-auto object-contain rounded-lg shadow-md">
-                <img src="assets/gamtek-1.jpg" alt="Paket Alat Gamtek" class="w-full h-auto object-contain rounded-lg shadow-md col-span-2 mx-auto">
+                <img src="assets/gamtek-1.jpg" alt="Paket Alat Gamtek" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/keychain-immt-1.jpg" alt="Keychain IMMt 1" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/keychain-immt-2.jpg" alt="Keychain IMMt 2" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/keychain-makara-1.jpg" alt="Keychain Makara UI" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/sticker-mobil-1.jpg" alt="Sticker Mobil" class="w-full h-auto object-contain rounded-lg shadow-md">
             </div>
         </div>
         <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">Early Bird Mahasiswa Baru Bundle!</h2>
                 <p class="text-gray-600 mb-6">
-                    Dapatkan Jaslab, Workshirt Kerja Praktik, dan Paket Alat Gamtek dengan harga spesial!
+                    Dapatkan Jaslab, Workshirt Kerja Praktik, Paket Alat Gamtek, kedua jenis Keychain IMMt, Keychain Makara, dan Sticker Mobil dengan harga spesial!
                     Pilihan terbaik untuk memulai petualangan Anda di IMMt.
                 </p>
                 <div class="mb-4">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab:</p>
-                    <div id="bundle-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
+                    <div id="bundle-maba-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Jaslab akan dirender di sini -->
                     </div>
-                    <p id="bundle-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    <p id="bundle-maba-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
                 </div>
                 <div class="mt-4 mb-6">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt KP:</p>
-                    <div id="bundle-workshirt-kp-size-options" class="flex flex-wrap gap-3 mb-2">
+                    <div id="bundle-maba-workshirt-kp-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Workshirt KP akan dirender di sini -->
                     </div>
-                    <p id="bundle-workshirt-kp-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    <p id="bundle-maba-workshirt-kp-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
                 </div>
             </div>
             <div class="mt-auto pt-4 border-t">
-                <p class="text-lg text-gray-600">Harga Normal: <s id="bundle-normal-price" class="text-red-500">Rp 0</s></p>
-                <p class="text-2xl font-bold text-green-600">Harga Bundle: <span id="bundle-discounted-price">Rp 0</span></p>
-                <p class="text-sm text-green-700 mt-1" id="bundle-savings-message">Pilih ukuran untuk melihat penghematan!</p>
-                <button id="add-bundle-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-4" disabled>
+                <p class="text-lg text-gray-600">Harga Normal: <s id="bundle-maba-normal-price" class="text-red-500">Rp 0</s></p>
+                <p class="text-2xl font-bold text-green-600">Harga Bundle: <span id="bundle-maba-discounted-price">Rp 0</span></p>
+                <p class="text-sm text-green-700 mt-1" id="bundle-maba-savings-message">Pilih ukuran untuk melihat penghematan!</p>
+                <button id="add-bundle-maba-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-4" disabled>
                     Tambahkan Bundle ke Keranjang
                 </button>
             </div>
         </div>
-        <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="bundle-promo-modal">
+        <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="bundle-promo-maba-modal">
+            <i class="w-6 h-6" data-lucide="x"></i>
+        </button>
+    </div>
+  </div>
+
+  <!-- New Bundle Promo Modal - Gue Anak Metal! -->
+  <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="bundle-promo-anak-metal-modal">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl h-full overflow-scroll flex flex-col md:flex-row">
+        <div class="w-full md:w-1/2 p-4 flex flex-col items-center justify-center bg-gray-50 rounded-lg">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Apa yang Anda Dapatkan:</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <img src="assets/jaslab-1.jpg" alt="Jaslab" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/topi-immt-1.jpg" alt="Topi IMMt" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/keychain-immt-1.jpg" alt="Keychain IMMt 1" class="w-full h-auto object-contain rounded-lg shadow-md">
+                <img src="assets/keychain-immt-2.jpg" alt="Keychain IMMt 2" class="w-full h-auto object-contain rounded-lg shadow-md">
+            </div>
+        </div>
+        <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Gue Anak Metal! Bundle</h2>
+                <p class="text-gray-600 mb-6">
+                    Dapatkan Jaslab, Topi IMMt, dan kedua jenis Keychain IMMt dengan harga spesial!
+                    Tunjukkan identitasmu sebagai anak metal sejati!
+                </p>
+                <div class="mb-4">
+                    <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab:</p>
+                    <div id="bundle-anak-metal-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
+                        <!-- Ukuran Jaslab akan dirender di sini -->
+                    </div>
+                    <p id="bundle-anak-metal-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                </div>
+            </div>
+            <div class="mt-auto pt-4 border-t">
+                <p class="text-lg text-gray-600">Harga Normal: <s id="bundle-anak-metal-normal-price" class="text-red-500">Rp 0</s></p>
+                <p class="text-2xl font-bold text-green-600">Harga Bundle: <span id="bundle-anak-metal-discounted-price">Rp 0</span></p>
+                <p class="text-sm text-green-700 mt-1" id="bundle-anak-metal-savings-message">Pilih ukuran untuk melihat penghematan!</p>
+                <button id="add-bundle-anak-metal-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-4" disabled>
+                    Tambahkan Bundle ke Keranjang
+                </button>
+            </div>
+        </div>
+        <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="bundle-promo-anak-metal-modal">
             <i class="w-6 h-6" data-lucide="x"></i>
         </button>
     </div>
@@ -362,6 +424,10 @@
        <img class="mb-2 rounded" src="assets/promo-maba.jpg" alt="Promo Early Bird Mahasiswa Baru"/>
        Early Bird Mahasiswa Baru!
       </div>
+      <div class="min-w-[300px] bg-green-100 text-center rounded-lg p-4 text-green-900 font-bold" id="main-promo-anak-metal-card" data-promo-id="anak-metal">
+        <img class="mb-2 rounded" src="assets/promo-anak-metal.jpg" alt="Promo Gue Anak Metal!"/>
+        Gue Anak Metal!
+       </div>
      </div>
     </div>
    </section>
@@ -823,8 +889,9 @@
         let paymentProofFile = null; // Untuk menyimpan file yang diunggah
 
         // Variabel untuk pemilihan ukuran promo
-        let promoJaslabSize = null;
-        let promoWorkshirtKpSize = null;
+        let promoJaslabMabaSize = null; // Ukuran Jaslab untuk bundle MABA
+        let promoWorkshirtKpMabaSize = null; // Ukuran Workshirt KP untuk bundle MABA
+        let promoJaslabAnakMetalSize = null; // Ukuran Jaslab untuk bundle Anak Metal
 
         const dom = {
           productsGrid: document.getElementById("products-grid"),
@@ -869,28 +936,37 @@
           addressInputContainer: document.getElementById("address-input-container"),
           paymentProofInput: document.getElementById("payment-proof"),
 
-          // Elemen baru untuk modal ukuran promo
+          // Elemen untuk bundle Early Bird Maba
           promoMabaCard: document.getElementById("promo-maba-card"), // Untuk overview dan promo utama
-          mainPromoCard: document.getElementById("main-promo-card"), // Untuk overview dan promo utama
+          mainPromoCardMaba: document.getElementById("main-promo-card"), // Untuk overview dan promo utama
+          bundlePromoMabaModal: document.getElementById("bundle-promo-maba-modal"),
+          bundleMabaJaslabSizeOptions: document.getElementById("bundle-maba-jaslab-size-options"),
+          bundleMabaWorkshirtKpSizeOptions: document.getElementById("bundle-maba-workshirt-kp-size-options"),
+          addBundleMabaToCartBtn: document.getElementById("add-bundle-maba-to-cart-btn"),
+          bundleMabaJaslabPrice: document.getElementById("bundle-maba-jaslab-price"),
+          bundleMabaWorkshirtKpPrice: document.getElementById("bundle-maba-workshirt-kp-price"),
+          bundleMabaNormalPrice: document.getElementById("bundle-maba-normal-price"),
+          bundleMabaDiscountedPrice: document.getElementById("bundle-maba-discounted-price"),
+          bundleMabaSavingsMessage: document.getElementById("bundle-maba-savings-message"),
 
-          bundlePromoModal: document.getElementById("bundle-promo-modal"),
-          bundleJaslabSizeOptions: document.getElementById("bundle-jaslab-size-options"),
-          bundleWorkshirtKpSizeOptions: document.getElementById("bundle-workshirt-kp-size-options"),
-          addBundleToCartBtn: document.getElementById("add-bundle-to-cart-btn"),
+          // Elemen untuk bundle Gue Anak Metal!
+          promoAnakMetalCard: document.getElementById("promo-anak-metal-card"),
+          mainPromoCardAnakMetal: document.getElementById("main-promo-anak-metal-card"),
+          bundlePromoAnakMetalModal: document.getElementById("bundle-promo-anak-metal-modal"),
+          bundleAnakMetalJaslabSizeOptions: document.getElementById("bundle-anak-metal-jaslab-size-options"),
+          addBundleAnakMetalToCartBtn: document.getElementById("add-bundle-anak-metal-to-cart-btn"),
+          bundleAnakMetalJaslabPrice: document.getElementById("bundle-anak-metal-jaslab-price"),
+          bundleAnakMetalNormalPrice: document.getElementById("bundle-anak-metal-normal-price"),
+          bundleAnakMetalDiscountedPrice: document.getElementById("bundle-anak-metal-discounted-price"),
+          bundleAnakMetalSavingsMessage: document.getElementById("bundle-anak-metal-savings-message"),
+
           continueShoppingBtn: document.getElementById("continue-shopping-btn"), // New button for continue shopping
 
           // New for "Nama untuk Bordir"
           bordirNameContainer: document.getElementById("bordir-name-container"),
-
-          // New for bundle price display
-          bundleJaslabPrice: document.getElementById("bundle-jaslab-price"),
-          bundleWorkshirtKpPrice: document.getElementById("bundle-workshirt-kp-price"),
-          bundleNormalPrice: document.getElementById("bundle-normal-price"),
-          bundleDiscountedPrice: document.getElementById("bundle-discounted-price"),
-          bundleSavingsMessage: document.getElementById("bundle-savings-message"),
         };
 
-        const BUNDLE_DISCOUNT = 15000; // Define the discount amount for the bundle
+        const BUNDLE_DISCOUNT = 15000; // Define the discount amount for all bundles
 
         const formatCurrency = (n) =>
           new Intl.NumberFormat("id-ID", {
@@ -996,14 +1072,18 @@
 
         const addToCart = (productId, size = null, option = null, quantity = 1, isBundleItem = false) => {
           const product = products.find((p) => p.id === productId);
+          if (!product) {
+              console.error(`Product with ID ${productId} not found.`);
+              return;
+          }
           let finalPrice = product.price;
 
-          if (product.hasSizes) {
+          if (product.hasSizes && size) {
             finalPrice = calculatePrice(finalPrice, size);
           }
           
           // Apply bundle discount only to Jaslab (ID 1) when added as part of a bundle
-          // Distribute the BUNDLE_DISCOUNT among items as needed, here it's applied fully to Jaslab for simplicity
+          // For simplicity, the full BUNDLE_DISCOUNT is applied to Jaslab in both bundles.
           if (isBundleItem && productId === 1) {
               finalPrice -= BUNDLE_DISCOUNT;
               if (finalPrice < 0) finalPrice = 0; // Ensure price doesn't go negative
@@ -1148,42 +1228,83 @@
           lucide.createIcons();
         };
 
-        // Function to update bundle prices and savings message
-        const updateBundlePrices = () => {
+        // Function to update bundle prices and savings message for Early Bird Maba
+        const updateBundleMabaPrices = () => {
             const jaslabProduct = products.find(p => p.id === 1);
             const workshirtKpProduct = products.find(p => p.id === 2);
             const gamtekProduct = products.find(p => p.id === 8);
+            const keychainImmtProduct = products.find(p => p.id === 6);
+            const keychainMakaraProduct = products.find(p => p.id === 7);
+            const stickerMobilProduct = products.find(p => p.id === 5);
 
             let currentJaslabPrice = 0;
-            if (promoJaslabSize) {
-                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabSize);
-                dom.bundleJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+            if (promoJaslabMabaSize) {
+                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize);
+                dom.bundleMabaJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
             } else {
-                dom.bundleJaslabPrice.textContent = 'Pilih Ukuran';
+                dom.bundleMabaJaslabPrice.textContent = 'Pilih Ukuran';
             }
 
             let currentWorkshirtKpPrice = 0;
-            if (promoWorkshirtKpSize) {
-                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
-                dom.bundleWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
+            if (promoWorkshirtKpMabaSize) {
+                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize);
+                dom.bundleMabaWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
             } else {
-                dom.bundleWorkshirtKpPrice.textContent = 'Pilih Ukuran';
+                dom.bundleMabaWorkshirtKpPrice.textContent = 'Pilih Ukuran';
             }
 
             const gamtekPrice = gamtekProduct.price;
-            const totalNormalBundlePrice = (promoJaslabSize ? currentJaslabPrice : 0) + (promoWorkshirtKpSize ? currentWorkshirtKpPrice : 0) + gamtekPrice;
+            const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+            const keychainMakaraPrice = keychainMakaraProduct.price;
+            const stickerMobilPrice = stickerMobilProduct.price;
+
+
+            const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabPrice : 0) + (promoWorkshirtKpMabaSize ? currentWorkshirtKpPrice : 0) + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
             const discountedBundlePrice = totalNormalBundlePrice > BUNDLE_DISCOUNT ? totalNormalBundlePrice - BUNDLE_DISCOUNT : 0;
             const savings = totalNormalBundlePrice - discountedBundlePrice;
 
-            dom.bundleNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
-            dom.bundleDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+            dom.bundleMabaNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
+            dom.bundleMabaDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
 
-            if (promoJaslabSize && promoWorkshirtKpSize) {
-                dom.bundleSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
-                dom.addBundleToCartBtn.disabled = false;
+            if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
+                dom.bundleMabaSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
+                dom.addBundleMabaToCartBtn.disabled = false;
             } else {
-                dom.bundleSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
-                dom.addBundleToCartBtn.disabled = true;
+                dom.bundleMabaSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
+                dom.addBundleMabaToCartBtn.disabled = true;
+            }
+        };
+
+        // Function to update bundle prices and savings message for Gue Anak Metal!
+        const updateBundleAnakMetalPrices = () => {
+            const jaslabProduct = products.find(p => p.id === 1);
+            const topiImmtProduct = products.find(p => p.id === 9);
+            const keychainImmtProduct = products.find(p => p.id === 6);
+
+            let currentJaslabPrice = 0;
+            if (promoJaslabAnakMetalSize) {
+                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize);
+                dom.bundleAnakMetalJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+            } else {
+                dom.bundleAnakMetalJaslabPrice.textContent = 'Pilih Ukuran';
+            }
+
+            const topiImmtPrice = topiImmtProduct.price;
+            const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+
+            const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabPrice : 0) + topiImmtPrice + keychainImmtPrice;
+            const discountedBundlePrice = totalNormalBundlePrice > BUNDLE_DISCOUNT ? totalNormalBundlePrice - BUNDLE_DISCOUNT : 0;
+            const savings = totalNormalBundlePrice - discountedBundlePrice;
+
+            dom.bundleAnakMetalNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
+            dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+
+            if (promoJaslabAnakMetalSize) {
+                dom.bundleAnakMetalSavingsMessage.innerHTML = `Kamu hemat <span class="font-bold">${formatCurrency(savings)}</span>!`;
+                dom.addBundleAnakMetalToCartBtn.disabled = false;
+            } else {
+                dom.bundleAnakMetalSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
+                dom.addBundleAnakMetalToCartBtn.disabled = true;
             }
         };
 
@@ -1459,18 +1580,26 @@
             renderDetailActionButtons(); // Re-render button to enable quantity if an option is selected
           }
 
-          // Handle bundle size selections
-          if (e.target.matches('#bundle-jaslab-size-options .size-btn')) {
-              dom.bundleJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+          // Handle bundle Maba size selections
+          if (e.target.matches('#bundle-maba-jaslab-size-options .size-btn')) {
+              dom.bundleMabaJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
               e.target.classList.add("bg-green-600", "text-white");
-              promoJaslabSize = e.target.dataset.size;
-              updateBundlePrices();
+              promoJaslabMabaSize = e.target.dataset.size;
+              updateBundleMabaPrices();
           }
-          if (e.target.matches('#bundle-workshirt-kp-size-options .size-btn')) {
-              dom.bundleWorkshirtKpSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+          if (e.target.matches('#bundle-maba-workshirt-kp-size-options .size-btn')) {
+              dom.bundleMabaWorkshirtKpSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
               e.target.classList.add("bg-green-600", "text-white");
-              promoWorkshirtKpSize = e.target.dataset.size;
-              updateBundlePrices();
+              promoWorkshirtKpMabaSize = e.target.dataset.size;
+              updateBundleMabaPrices();
+          }
+
+          // Handle bundle Anak Metal size selections
+          if (e.target.matches('#bundle-anak-metal-jaslab-size-options .size-btn')) {
+              dom.bundleAnakMetalJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+              e.target.classList.add("bg-green-600", "text-white");
+              promoJaslabAnakMetalSize = e.target.dataset.size;
+              updateBundleAnakMetalPrices();
           }
         });
 
@@ -1586,59 +1715,101 @@
 
         // Tangani klik pada item promo di modal ikhtisar dan bagian promo utama
         const handlePromoClick = (e) => {
-            const promoItem = e.target.closest(".product-overview-item, #main-promo-card");
-            if (promoItem && promoItem.dataset.promoId === 'maba') {
+            const promoItem = e.target.closest(".product-overview-item, #main-promo-card, #main-promo-anak-metal-card");
+            if (promoItem) {
+                const promoId = promoItem.dataset.promoId;
                 toggleModal(dom.productOverviewModal, false); // Tutup modal ikhtisar
-                
-                // Buka modal bundle promo
-                const jaslabProduct = products.find(p => p.id === 1);
-                const workshirtKpProduct = products.find(p => p.id === 2);
 
-                if (jaslabProduct && workshirtKpProduct) {
-                    dom.bundleJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
-                        `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                    ).join("");
-                    dom.bundleWorkshirtKpSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
-                        `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                    ).join("");
-                    
-                    promoJaslabSize = null; // Reset pilihan
-                    promoWorkshirtKpSize = null; // Reset pilihan
-                    updateBundlePrices(); // Update prices for the first time
-                    dom.addBundleToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
+                if (promoId === 'maba') {
+                    // Buka modal bundle promo Maba
+                    const jaslabProduct = products.find(p => p.id === 1);
+                    const workshirtKpProduct = products.find(p => p.id === 2);
 
-                    toggleModal(dom.bundlePromoModal, true);
+                    if (jaslabProduct && workshirtKpProduct) {
+                        dom.bundleMabaJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
+                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                        ).join("");
+                        dom.bundleMabaWorkshirtKpSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
+                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                        ).join("");
+                        
+                        promoJaslabMabaSize = null; // Reset pilihan
+                        promoWorkshirtKpMabaSize = null; // Reset pilihan
+                        updateBundleMabaPrices(); // Update prices for the first time
+                        dom.addBundleMabaToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
+
+                        toggleModal(dom.bundlePromoMabaModal, true);
+                    }
+                } else if (promoId === 'anak-metal') {
+                    // Buka modal bundle promo Anak Metal
+                    const jaslabProduct = products.find(p => p.id === 1);
+
+                    if (jaslabProduct) {
+                        dom.bundleAnakMetalJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
+                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                        ).join("");
+                        
+                        promoJaslabAnakMetalSize = null; // Reset pilihan
+                        updateBundleAnakMetalPrices(); // Update prices for the first time
+                        dom.addBundleAnakMetalToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
+
+                        toggleModal(dom.bundlePromoAnakMetalModal, true);
+                    }
                 }
             }
         };
 
         dom.productOverviewModal.addEventListener("click", handlePromoClick);
-        dom.mainPromoCard.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama
+        dom.mainPromoCardMaba.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama Early Bird
+        dom.mainPromoCardAnakMetal.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama Gue Anak Metal!
 
-        // Handle adding the entire bundle to cart
-        dom.addBundleToCartBtn.addEventListener('click', () => {
-            if (promoJaslabSize && promoWorkshirtKpSize) {
+
+        // Handle adding the Early Bird Maba bundle to cart
+        dom.addBundleMabaToCartBtn.addEventListener('click', () => {
+            if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
                 // Determine the discounted price for Jaslab to ensure total bundle discount
                 const jaslabProduct = products.find(p => p.id === 1);
                 const workshirtKpProduct = products.find(p => p.id === 2);
                 const gamtekProduct = products.find(p => p.id === 8);
+                const keychainImmtProduct = products.find(p => p.id === 6);
+                const keychainMakaraProduct = products.find(p => p.id === 7);
+                const stickerMobilProduct = products.find(p => p.id === 5);
 
-                const currentJaslabBasePrice = calculatePrice(jaslabProduct.price, promoJaslabSize);
-                const currentWorkshirtKpBasePrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpSize);
-                const gamtekBasePrice = gamtekProduct.price;
-
-                const totalNormalBundlePrice = currentJaslabBasePrice + currentWorkshirtKpBasePrice + gamtekBasePrice;
-                const discountedJaslabPrice = currentJaslabBasePrice - BUNDLE_DISCOUNT; // Apply full discount to Jaslab
-
-                addToCart(1, promoJaslabSize, null, 1, true); // Jaslab with discount flag
-                addToCart(2, promoWorkshirtKpSize, null, 1, false); // Workshirt KP
-                addToCart(8, null, null, 1, false); // Gamtek
+                // Add items to cart. Jaslab gets the bundle discount applied.
+                addToCart(jaslabProduct.id, promoJaslabMabaSize, null, 1, true); // Jaslab with discount flag
+                addToCart(workshirtKpProduct.id, promoWorkshirtKpMabaSize, null, 1, false); // Workshirt KP
+                addToCart(gamtekProduct.id, null, null, 1, false); // Gamtek
+                addToCart(keychainImmtProduct.id, null, "Keychain 1", 1, false); // Keychain IMMt 1
+                addToCart(keychainImmtProduct.id, null, "Keychain 2", 1, false); // Keychain IMMt 2
+                addToCart(keychainMakaraProduct.id, null, null, 1, false); // Keychain Makara UI
+                addToCart(stickerMobilProduct.id, null, null, 1, false); // Sticker Mobil
                 
-                toggleModal(dom.bundlePromoModal, false);
+                toggleModal(dom.bundlePromoMabaModal, false);
                 toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
-                showCustomAlert("Jaslab, Workshirt KP, dan Paket Alat Gamtek telah ditambahkan ke keranjang Anda!");
+                showCustomAlert("Bundle Early Bird Mahasiswa Baru telah ditambahkan ke keranjang Anda!");
             } else {
                 showCustomAlert("Silakan pilih ukuran Jaslab dan Workshirt KP terlebih dahulu.");
+            }
+        });
+
+        // Handle adding the Gue Anak Metal! bundle to cart
+        dom.addBundleAnakMetalToCartBtn.addEventListener('click', () => {
+            if (promoJaslabAnakMetalSize) {
+                const jaslabProduct = products.find(p => p.id === 1);
+                const topiImmtProduct = products.find(p => p.id === 9);
+                const keychainImmtProduct = products.find(p => p.id === 6);
+
+                // Add items to cart. Jaslab gets the bundle discount applied.
+                addToCart(jaslabProduct.id, promoJaslabAnakMetalSize, null, 1, true); // Jaslab with discount flag
+                addToCart(topiImmtProduct.id, null, null, 1, false); // Topi IMMt
+                addToCart(keychainImmtProduct.id, null, "Keychain 1", 1, false); // Keychain IMMt 1
+                addToCart(keychainImmtProduct.id, null, "Keychain 2", 1, false); // Keychain IMMt 2
+                
+                toggleModal(dom.bundlePromoAnakMetalModal, false);
+                toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
+                showCustomAlert("Bundle Gue Anak Metal! telah ditambahkan ke keranjang Anda!");
+            } else {
+                showCustomAlert("Silakan pilih ukuran Jaslab terlebih dahulu.");
             }
         });
 
