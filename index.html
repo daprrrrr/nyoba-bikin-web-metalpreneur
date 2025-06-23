@@ -53,24 +53,25 @@
         padding: 5rem 1rem;
         text-align: center;
         background-image: url("assets/bg-shop.jpg"); /* Reverted to original asset path */
-        background-size: cover;
-        background-position: center;
-        /* Tambahan untuk responsivitas gambar latar belakang */
-        background-repeat: no-repeat;
-        background-attachment: scroll; /* Menggulir bersama konten */
+        background-size: cover; /* Kembali ke ukuran cover */
+        background-position: center; /* Kembali ke posisi tengah */
+        /* Hapus tambahan responsivitas gambar latar belakang */
+        /* background-repeat: no-repeat; */
+        /* background-attachment: scroll; */
       }
-      @media (min-width: 768px) { /* Untuk desktop */
+      /* Hapus media query untuk responsivitas gambar latar belakang */
+      /* @media (min-width: 768px) {
         .hero-section {
-          background-size: 100% auto; /* Lebar penuh, tinggi menyesuaikan */
+          background-size: 100% auto;
           background-position: center;
         }
       }
-      @media (max-width: 767px) { /* Untuk mobile */
+      @media (max-width: 767px) {
         .hero-section {
-          background-size: cover; /* Menutupi area, bisa terpotong sedikit */
+          background-size: cover;
           background-position: center center;
         }
-      }
+      } */
 
       .hero-section::before {
         content: "";
@@ -780,7 +781,8 @@
       </p>
       <div class="bg-gray-200 my-4 w-64 h-64 flex items-center justify-center rounded-md">
        <span class="text-gray-500 text-center">
-               </span>
+               [Image of QRIS]
+       </span>
       </div>
       <div class="bg-red-100 text-red-700 font-bold p-3 rounded-lg">
        <span>
