@@ -352,12 +352,12 @@
     </h2>
     <div class="product-overview-grid">
      <div class="product-overview-item" id="promo-maba-card" data-promo-id="maba">
-      <img alt="Promo Mahasiswa Baru" class="w-full h-40 object-cover" src="assets/promo-maba-1.jpg"/>
+      <img alt="Promo Tahun Ajaran Baru" class="w-full h-40 object-cover" src="assets/promo-maba-1.jpg"/>
       <h3 class="product-overview-title">
-       Early Bird Mahasiswa Baru!
+       Early Bird Tahun Ajaran Baru!
       </h3>
       <p class="product-overview-description">
-       Dapatkan diskon khusus untuk mahasiswa baru!
+       Dapatkan diskon khusus untuk tahun ajaran baru!
       </p>
       <p class="product-overview-price">
       </p>
@@ -397,7 +397,7 @@
         </div>
         <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Early Bird Mahasiswa Baru Bundle!</h2>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Early Bird Tahun Ajaran Baru Bundle!</h2>
                 <p class="text-gray-600 mb-6">
                     Dapatkan Jaslab, Workshirt Kerja Praktik, Paket Alat Gamtek, kedua jenis Keychain IMMt (bordir dan akrilik), Keychain Makara, dan kedua Sticker Mobil dengan harga spesial!
                     Pilihan terbaik untuk memulai petualangan Anda di Metalurgi.
@@ -536,8 +536,8 @@
     <div class="overflow-x-auto whitespace-nowrap scrollbar-hide">
      <div class="flex space-x-4 justify-center">
       <div class="min-w-[300px] bg-green-100 text-center rounded-lg p-4 text-green-900 font-bold" id="main-promo-card" data-promo-id="maba">
-       <img class="mb-2 rounded w-full h-40 object-cover aspect-video" src="assets/promo-maba-2.jpg" alt="Promo Early Bird Mahasiswa Baru"/>
-       Early Bird Mahasiswa Baru!
+       <img class="mb-2 rounded w-full h-40 object-cover aspect-video" src="assets/promo-maba-2.jpg" alt="Promo Early Bird Tahun Ajaran Baru"/>
+       Early Bird Tahun Ajaran Baru!
       </div>
       <div class="min-w-[300px] bg-green-100 text-center rounded-lg p-4 text-green-900 font-bold" id="main-promo-anak-metal-card" data-promo-id="anak-metal">
         <img class="mb-2 rounded w-full h-40 object-cover aspect-video" src="assets/promo-anak-metal-2.jpg" alt="Promo Gue Anak Metal!"/>
@@ -825,7 +825,7 @@
         <input id="payment-proof" type="file" required accept="image/*" class="block w-full text-sm border border-gray-300 rounded-md p-2" />
       </div>
       <button class="w-full max-w-xs mt-4 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 disabled:opacity-50" id="finish-payment-btn" disabled>
-       Selesaikan Pembelian
+       Saya Sudah Membayar
       </button>
      </div>
     </div>
@@ -2147,7 +2147,7 @@
             const bundleCartItem = {
                 cartItemId: 'bundle-early-bird-maba', // Unique ID for this bundle type in cart
                 id: 'bundle-early-bird-maba-id', // Generic ID for bundle recognition
-                name: 'Early Bird Mahasiswa Baru Bundle',
+                name: 'Early Bird Tahun Ajaran Baru Bundle',
                 image: 'assets/promo-maba.jpg',
                 quantity: 1,
                 finalPrice: finalBundlePrice, // This is the total price displayed in cart
@@ -2159,7 +2159,7 @@
             
             toggleModal(dom.bundlePromoMabaModal, false);
             toggleModal(dom.cartModal, true); // Show cart with all items
-            showCustomAlert("Bundle Early Bird Mahasiswa Baru telah ditambahkan ke keranjang Anda!");
+            showCustomAlert("Bundle Early Bird Tahun Ajaran Baru telah ditambahkan ke keranjang Anda!");
         } else {
             showCustomAlert("Please select Jaslab and Workshirt KP sizes first.");
         }
