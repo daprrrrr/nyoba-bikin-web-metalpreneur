@@ -330,6 +330,14 @@
               margin-right: 1rem; /* Ensure the last card has padding from the right edge */
           }
       }
+
+      /* Strikethrough price style */
+      .strikethrough-price {
+          text-decoration: line-through;
+          color: #ef4444; /* Red color for strikethrough price */
+          margin-right: 0.5rem;
+          font-size: 0.9em; /* Slightly smaller than current price */
+      }
   </style>
  </head>
  <body class="antialiased text-gray-800">
@@ -613,8 +621,11 @@
       <h2 class="text-3xl font-bold text-gray-900" id="detail-product-name">
       </h2>
       <p class="text-gray-600 text-sm mt-2 mb-4" id="detail-product-description"></p>
-      <p class="text-2xl font-semibold text-indigo-600 my-4" id="detail-product-price">
-      </p>
+      <!-- Display normal price and strikethrough price here -->
+      <div class="flex items-baseline my-4">
+          <p class="text-xl font-semibold text-gray-500 strikethrough-price" id="detail-normal-price" style="display: none;"></p>
+          <p class="text-2xl font-semibold text-indigo-600" id="detail-product-price"></p>
+      </div>
       <div class="mt-4" id="detail-size-container">
        <p class="font-semibold text-gray-800 mb-2">
         Pilih Ukuran:
@@ -831,970 +842,1011 @@
   </div>
   <script>
    document.addEventListener("DOMContentLoaded", () => {
-        // Kunci Konfigurasi Firebase Anda
-        const firebaseConfig = {
-          apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
-          authDomain: "database-immt-shop-2.firebaseapp.com",
-          projectId: "database-immt-shop-2",
-          storageBucket: "database-immt-shop-2.firebasestorage.app",
-          messagingSenderId: "490881653909",
-          appId: "1:490881653909:web:d87aeeb410bcda57260f9c",
-          measurementId: "G-MW5G4T5PF7",
+    // Firebase Configuration Keys
+    const firebaseConfig = {
+      apiKey: "AIzaSyDw-KoXQBNi1BZdgI5rxib0VAf7wThD4UM",
+      authDomain: "database-immt-shop-2.firebaseapp.com",
+      projectId: "database-immt-shop-2",
+      storageBucket: "database-immt-shop-2.firebasestorage.app",
+      messagingSenderId: "490881653909",
+      appId: "1:490881653909:web:d87aeeb410bcda57260f9c",
+      measurementId: "G-MW5G4T5PF7",
+    };
+
+    // Cloudinary Configuration Keys (REPLACE WITH YOUR OWN KEYS!)
+    // You need to create a FREE Cloudinary account and get these.
+    // The Upload Preset should be set as "Unsigned" in your Cloudinary dashboard.
+    const CLOUDINARY_CLOUD_NAME = 'dmqznikmw'; // Example: 'my-shop-cloud'
+    const CLOUDINARY_UPLOAD_PRESET = 'bukti_pembayaran_uploads'; // Example: 'unsigned_uploads'
+
+
+    // Initialize Firebase using global namespace (only Firestore is relevant)
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    // Firebase Storage is no longer directly used
+
+
+    const allProducts = [
+      {
+        id: 1,
+        name: "Jas laboratorium",
+        price: 140000, // Original price
+        strikethroughPrice: 160000, // New strikethrough price
+        description: "Jas Laboratorium berkualitas tinggi, dengan berbasis bahan american drill yang ketika dipakai akan terasa nyaman dan tidak panas. Wajib bagi setiap mahasiswa Metalurgi pada saat praktikum. Dilengkapi dengan bordir nama pada sisi kanan dan logo IMMt pada sisi kiri dada.",
+        image: "assets/jaslab-1.jpg",
+        hasSizes: true,
+        sizes: ["S", "M", "L", "XL", "XXL"], // Added more sizes
+        detailImages: [
+          "assets/jaslab-1.jpg",
+          "assets/jaslab-2.jpg",
+          "assets/size-chart-a.jpg",
+        ],
+        inBundle: true,
+      },
+      {
+        id: 2,
+        name: "Workshirt Kerja Praktik",
+        price: 160000, // Original price
+        strikethroughPrice: 175000, // New strikethrough price
+        description: "Workshirt nyaman dan stylish untuk kegiatan kerja praktik Anda. Bahan kuat dan tahan lama yang siap dipakai kerja praktik anda.",
+        image: "assets/workshirt-kp-1.jpg",
+        hasSizes: true,
+        sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL"],
+        detailImages: [
+          "assets/workshirt-kp-1.jpg",
+          "assets/workshirt-kp-2.jpg",
+          "assets/size-chart-b.jpg",
+        ],
+        inBundle: true,
+      },
+      {
+        id: 3,
+        name: "Workshirt Metalurgi",
+        price: 179000,
+        description: "Tunjukkan kebanggaan Anda sebagai mahasiswa metalurgi dengan workshirt eksklusif ini.",
+        image: "assets/workshirt-metal-1.jpg",
+        hasSizes: true,
+        sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"],
+        detailImages: [
+          "assets/workshirt-metal-1.jpg",
+          "assets/workshirt-metal-2.jpg",
+          "assets/size-chart-c.jpg",
+        ],
+        inBundle: false, // Not in existing bundles
+      },
+      {
+        id: 4,
+        name: "Sticker (3pcs)",
+        price: 15000,
+        description: "Paket 3 stiker unik dengan desain IMMt. Cocok untuk laptop, buku, atau dimanapun.",
+        image: "assets/sticker-pack-1.jpg",
+        hasSizes: false,
+        detailImages: [
+          "assets/sticker-pack-1.jpg",
+          "assets/sticker-pack-2.jpg",
+          "assets/sticker-pack-3.jpg",
+        ],
+        inBundle: false, // Not in existing bundles
+      },
+      {
+        id: 5,
+        name: "Sticker mobil",
+        price: 15000,
+        description: "Stiker khusus untuk mobil Anda, tunjukkan identitas bahwa anda adalah bagian dari Teknik Metalurgi!",
+        image: "assets/sticker-mobil-1.jpg",
+        hasSizes: false,
+        hasOptions: true, // New property for options
+        options: ["Stiker Fakultas Teknik", "Stiker Metalurgi"], // New options for sticker mobil
+        detailImages: [
+          "assets/sticker-mobil-1.jpg",
+          "assets/sticker-mobil-2.jpg",
+        ],
+        inBundle: true,
+      },
+      {
+        id: 6,
+        name: "Keychain IMMt",
+        price: 15000,
+        description: "Gantungan kunci eksklusif IMMt, tersedia dalam dua desain unik. Pilih favorit Anda!",
+        image: "assets/keychain-immt-1.jpg",
+        hasSizes: false,
+        hasOptions: true, // New property for options
+        options: ["Keychain Kain Bordir", "Keychain Akrilik"], // New options
+        detailImages: [
+          "assets/keychain-immt-1.jpg",
+          "assets/keychain-immt-2.jpg",
+        ],
+        inBundle: true,
+      },
+      {
+        id: 7,
+        name: "Keychain Makara FTUI",
+        price: 15000,
+        description: "Gantungan kunci Makara UI, simbol kebanggaan kami sebagai anak Teknik!",
+        image: "assets/keychain-makara-1.jpg",
+        hasSizes: false,
+        detailImages: [
+          "assets/keychain-makara-1.jpg",
+        ],
+        inBundle: true,
+      },
+      {
+        id: 8,
+        name: "Paket Alat Gamtek",
+        price: 250000,
+        description: "Paket lengkap alat gambar teknik untuk menunjang kebutuhan perkuliahan Anda ketika menghadapi mata kuliah gambar teknik!<br>Paket Gamtek Berisikan :<br>1. Tabung Gamtek 64 CM<br>2. Penggaris<br>3. Penggaris MOR<br>4. Penghapus<br>5. Mal Huruf 3 & 6 mm<br>6. Mal lingkaran<br>7. Pensil Mekanik 0.5 & 0.7<br> 8. Isi Pensil 0.5 & 0.7<br> 9. Jangka<br>10. Buku Gambar A3<br> 11. Buku MM Block",
+        image: "assets/gamtek-1.jpg",
+        hasSizes: false,
+        detailImages: [
+          "assets/gamtek-1.jpg",
+          "assets/gamtek-2.jpg",
+          "assets/gamtek-3.jpg",
+          "assets/gamtek-4.jpg",
+          "assets/gamtek-5.jpg",
+          "assets/gamtek-6.jpg",
+          "assets/gamtek-7.jpg",
+          "assets/gamtek-8.jpg",
+          "assets/gamtek-9.jpg",
+          "assets/gamtek-10.jpg",
+          "assets/gamtek-11.jpg",
+          "assets/gamtek-12.jpg",
+        ],
+        inBundle: true,
+      },
+      { // New Product: Topi
+        id: 9,
+        name: "Topi Metalurgi",
+        price: 35000, // Updated price
+        description: "Topi stylish dengan design yang sangat menarik, cocok untuk kegiatan sehari-hari menerjang panas dan hujan.",
+        image: "assets/topi-immt-1.jpg",
+        hasSizes: false,
+        detailImages: [
+          "assets/topi-immt-1.jpg",
+        ],
+        inBundle: true,
+      },
+    ];
+
+    // Filter products, only display those with `inBundle: true`
+    // Note: If you want to show ALL products regardless of whether they are in a bundle,
+    // change this line to: `const products = [...allProducts];`
+    const products = allProducts.filter(product => product.inBundle);
+
+    let cart = [];
+    let currentDetailProduct = null;
+    let currentImageIndex = 0;
+    let countdownInterval = null;
+    let customerData = null;
+    let selectedSize = null;
+    let selectedOption = null; // New variable for product options (e.g., keychain type)
+    let filteredProducts = [...products]; // To store products after search filter
+    let paymentProofFile = null; // To store the uploaded file
+
+    // Variables for promo size selection
+    let promoJaslabMabaSize = null; // Jaslab size for MABA bundle
+    let promoWorkshirtKpMabaSize = null; // Workshirt KP size for MABA bundle
+    let promoJaslabAnakMetalSize = null; // Jaslab size for Anak Metal bundle
+
+    const dom = {
+      productsGrid: document.getElementById("products-grid"),
+      cartModal: document.getElementById("cart-modal"),
+      productDetailModal: document.getElementById("product-detail-modal"),
+      customerDataModal: document.getElementById("customer-data-modal"),
+      paymentModal: document.getElementById("payment-modal"),
+      successModal: document.getElementById("success-modal"),
+      productOverviewModal: document.getElementById("product-overview-modal"),
+      closeProductOverviewModalBtn: document.getElementById("close-product-overview-modal"),
+      openCartBtn: document.getElementById("open-cart-btn"),
+      checkoutBtn: document.getElementById("checkout-btn"),
+      cartItemsContainer: document.getElementById("cart-items"),
+      mainProductImage: document.getElementById("main-product-image"),
+      thumbnailContainer: document.getElementById("thumbnail-container"),
+      prevImageBtn: document.getElementById("prev-image-btn"),
+      nextImageBtn: document.getElementById("next-image-btn"),
+      detailProductName: document.getElementById("detail-product-name"),
+      detailProductDescription: document.getElementById("detail-product-description"), // New element
+      detailNormalPrice: document.getElementById("detail-normal-price"), // New element for strikethrough price
+      detailProductPrice: document.getElementById("detail-product-price"),
+      detailSizeContainer: document.getElementById("detail-size-container"),
+      detailSizeOptions: document.getElementById("detail-size-options"),
+      detailOptionContainer: document.getElementById("detail-option-container"), // New element
+      detailOptionLabel: document.getElementById("detail-option-label"), // New element
+      detailOptionOptions: document.getElementById("detail-option-options"), // New element
+      detailActionContainer: document.getElementById(
+        "detail-action-container"
+      ),
+      cartTotalEl: document.getElementById("cart-total"),
+      cartCountBadge: document.getElementById("cart-count-badge"),
+      customerForm: document.getElementById("customer-form"),
+      finishPaymentBtn: document.getElementById("finish-payment-btn"),
+      closeModalBtns: document.querySelectorAll(".close-modal-btn"),
+      orderSummaryItems: document.getElementById("order-summary-items"),
+      orderSummaryTotal: document.getElementById("order-summary-total"),
+      customerDataSummary: document.getElementById("customer-data-summary"),
+      countdownTimer: document.getElementById("countdown-timer"),
+      searchInput: document.getElementById("search-input"),
+      // Elements for shipping address
+      deliveryOption: document.getElementById("delivery-option"),
+      pickupOption: document.getElementById("pickup-option"),
+      addressInputContainer: document.getElementById("address-input-container"),
+      paymentProofInput: document.getElementById("payment-proof"),
+
+      // Elements for Early Bird Maba bundle
+      promoMabaCard: document.getElementById("promo-maba-card"), // For overview and main promo
+      mainPromoCardMaba: document.getElementById("main-promo-card"), // For overview and main promo
+      bundlePromoMabaModal: document.getElementById("bundle-promo-maba-modal"),
+      bundleMabaJaslabSizeOptions: document.getElementById("bundle-maba-jaslab-size-options"),
+      bundleMabaWorkshirtKpSizeOptions: document.getElementById("bundle-maba-workshirt-kp-size-options"),
+      addBundleMabaToCartBtn: document.getElementById("add-bundle-maba-to-cart-btn"),
+      bundleMabaJaslabPrice: document.getElementById("bundle-maba-jaslab-price"),
+      bundleMabaWorkshirtKpPrice: document.getElementById("bundle-maba-workshirt-kp-price"),
+      bundleMabaNormalPrice: document.getElementById("bundle-maba-normal-price"),
+      bundleMabaDiscountedPrice: document.getElementById("bundle-maba-discounted-price"),
+      bundleMabaSavingsMessage: document.getElementById("bundle-maba-savings-message"),
+
+      // Elements for Gue Anak Metal! bundle
+      promoAnakMetalCard: document.getElementById("promo-anak-metal-card"),
+      mainPromoCardAnakMetal: document.getElementById("main-promo-anak-metal-card"),
+      bundlePromoAnakMetalModal: document.getElementById("bundle-promo-anak-metal-modal"),
+      bundleAnakMetalJaslabSizeOptions: document.getElementById("bundle-anak-metal-jaslab-size-options"),
+      addBundleAnakMetalToCartBtn: document.getElementById("add-bundle-anak-metal-to-cart-btn"),
+      bundleAnakMetalJaslabPrice: document.getElementById("bundle-anak-metal-jaslab-price"),
+      bundleAnakMetalNormalPrice: document.getElementById("bundle-anak-metal-normal-price"),
+      bundleAnakMetalDiscountedPrice: document.getElementById("bundle-anak-metal-discounted-price"),
+      bundleAnakMetalSavingsMessage: document.getElementById("bundle-anak-metal-savings-message"),
+
+      continueShoppingBtn: document.getElementById("continue-shopping-btn"), // New button for continue shopping
+
+      // New for "Nama untuk Bordir"
+      bordirNameContainer: document.getElementById("bordir-name-container"),
+      // Selector for the embroidery name input field
+      bordirNameInput: document.querySelector('#bordir-name-container input[name="Nama untuk Bordir"]'),
+    };
+
+    const BUNDLE_DISCOUNT_AMOUNT = 15000; // Define the discount amount for all bundles
+
+    // Helper function to format currency
+    const formatCurrency = (n) =>
+      new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(n);
+    
+    // Function to calculate price based on product and size, with size increments
+    const calculatePrice = (basePrice, size, productId = null) => {
+        let price = basePrice;
+        const sizeIncrements = {
+            "S": 0, "M": 0, "L": 0,
+            "XL": 1, "XXL": 2, "3XL": 3, "4XL": 4, "5XL": 5
         };
-
-        // Kunci Konfigurasi Cloudinary Anda (GANTI DENGAN KUNCI ANDA SENDIRI!)
-        // Anda perlu membuat akun Cloudinary GRATI dan mendapatkan ini.
-        // Upload Preset harus diatur sebagai "Unsigned" di dashboard Cloudinary Anda.
-        const CLOUDINARY_CLOUD_NAME = 'dmqznikmw'; // Contoh: 'my-shop-cloud'
-        const CLOUDINARY_UPLOAD_PRESET = 'bukti_pembayaran_uploads'; // Contoh: 'unsigned_uploads'
-
-
-        // Inisialisasi Firebase menggunakan namespace global (hanya Firestore yang relevan)
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        // Firebase Storage tidak lagi digunakan secara langsung
-
-
-        const allProducts = [
-          {
-            id: 1,
-            name: "Jas laboratorium",
-            price: 140000,
-            description: "Jas Laboratorium berkualitas tinggi, dengan berbasis bahan american drill yang ketika dipakai akan terasa nyaman dan tidak panas. Wajib bagi setiap mahasiswa Metalurgi pada saat praktikum. Dilengkapi dengan bordir nama pada sisi kanan dan logo IMMt pada sisi kiri dada.",
-            image: "assets/jaslab-1.jpg",
-            hasSizes: true,
-            sizes: ["S", "M", "L", "XL", "XXL"], // Added more sizes
-            detailImages: [
-              "assets/jaslab-1.jpg",
-              "assets/jaslab-2.jpg",
-              "assets/size-chart-a.jpg",
-            ],
-            // Tambahkan property `inBundle` jika produk ini selalu dijual dalam bundle
-            inBundle: true,
-          },
-          {
-            id: 2,
-            name: "Workshirt Kerja Praktik",
-            price: 160000,
-            description: "Workshirt nyaman dan stylish untuk kegiatan kerja praktik Anda. Bahan kuat dan tahan lama yang siap dipakai kerja praktik anda.",
-            image: "assets/workshirt-kp-1.jpg",
-            hasSizes: true,
-            sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL"],
-            detailImages: [
-              "assets/workshirt-kp-1.jpg",
-              "assets/workshirt-kp-2.jpg",
-              "assets/size-chart-b.jpg",
-            ],
-            inBundle: true,
-          },
-          {
-            id: 3,
-            name: "Workshirt Metalurgi",
-            price: 179000,
-            description: "Tunjukkan kebanggaan Anda sebagai mahasiswa metalurgi dengan workshirt eksklusif ini.",
-            image: "assets/workshirt-metal-1.jpg",
-            hasSizes: true,
-            sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"],
-            detailImages: [
-              "assets/workshirt-metal-1.jpg",
-              "assets/workshirt-metal-2.jpg",
-              "assets/size-chart-c.jpg",
-            ],
-            inBundle: false, // Tidak ada dalam bundle yang ada
-          },
-          {
-            id: 4,
-            name: "Sticker (3pcs)",
-            price: 15000,
-            description: "Paket 3 stiker unik dengan desain IMMt. Cocok untuk laptop, buku, atau dimanapun.",
-            image: "assets/sticker-pack-1.jpg",
-            hasSizes: false,
-            detailImages: [
-              "assets/sticker-pack-1.jpg",
-              "assets/sticker-pack-2.jpg",
-              "assets/sticker-pack-3.jpg",
-            ],
-            inBundle: false, // Tidak ada dalam bundle yang ada
-          },
-          {
-            id: 5,
-            name: "Sticker mobil",
-            price: 15000,
-            description: "Stiker khusus untuk mobil Anda, tunjukkan identitas bahwa anda adalah bagian dari Teknik Metalurgi!",
-            image: "assets/sticker-mobil-1.jpg",
-            hasSizes: false,
-            hasOptions: true, // New property for options
-            options: ["Stiker Fakultas Teknik", "Stiker Metalurgi"], // New options for sticker mobil
-            detailImages: [
-              "assets/sticker-mobil-1.jpg",
-              "assets/sticker-mobil-2.jpg",
-            ],
-            inBundle: true,
-          },
-          {
-            id: 6,
-            name: "Keychain IMMt",
-            price: 15000,
-            description: "Gantungan kunci eksklusif IMMt, tersedia dalam dua desain unik. Pilih favorit Anda!",
-            image: "assets/keychain-immt-1.jpg",
-            hasSizes: false,
-            hasOptions: true, // New property for options
-            options: ["Keychain Kain Bordir", "Keychain Akrilik"], // New options
-            detailImages: [
-              "assets/keychain-immt-1.jpg",
-              "assets/keychain-immt-2.jpg",
-            ],
-            inBundle: true,
-          },
-          {
-            id: 7,
-            name: "Keychain Makara FTUI",
-            price: 15000,
-            description: "Gantungan kunci Makara UI, simbol kebanggaan kami sebagai anak Teknik!",
-            image: "assets/keychain-makara-1.jpg",
-            hasSizes: false,
-            detailImages: [
-              "assets/keychain-makara-1.jpg",
-            ],
-            inBundle: true,
-          },
-          {
-            id: 8,
-            name: "Paket Alat Gamtek",
-            price: 250000,
-            description: "Paket lengkap alat gambar teknik untuk menunjang kebutuhan perkuliahan Anda ketika menghadapi mata kuliah gambar teknik!<br>Paket Gamtek Berisikan :<br>1. Tabung Gamtek 64 CM<br>2. Penggaris<br>3. Penggaris MOR<br>4. Penghapus<br>5. Mal Huruf 3 & 6 mm<br>6. Mal lingkaran<br>7. Pensil Mekanik 0.5 & 0.7<br> 8. Isi Pensil 0.5 & 0.7<br> 9. Jangka<br>10. Buku Gambar A3<br> 11. Buku MM Block",
-            image: "assets/gamtek-1.jpg",
-            hasSizes: false,
-            detailImages: [
-              "assets/gamtek-1.jpg",
-              "assets/gamtek-2.jpg",
-              "assets/gamtek-3.jpg",
-              "assets/gamtek-4.jpg",
-              "assets/gamtek-5.jpg",
-              "assets/gamtek-6.jpg",
-              "assets/gamtek-7.jpg",
-              "assets/gamtek-8.jpg",
-              "assets/gamtek-9.jpg",
-              "assets/gamtek-10.jpg",
-              "assets/gamtek-11.jpg",
-              "assets/gamtek-12.jpg",
-            ],
-            inBundle: true,
-          },
-          { // New Product: Topi
-            id: 9,
-            name: "Topi Metalurgi",
-            price: 35000, // Updated price
-            description: "Topi stylish dengan design yang sangat menarik, cocok untuk kegiatan sehari-hari menerjang panas dan hujan.",
-            image: "assets/topi-immt-1.jpg",
-            hasSizes: false,
-            detailImages: [
-              "assets/topi-immt-1.jpg",
-            ],
-            inBundle: true,
-          },
-        ];
-
-        // Filter produk, hanya tampilkan yang memiliki properti `inBundle: true`
-        const products = allProducts.filter(product => product.inBundle);
-
-        let cart = [];
-        let currentDetailProduct = null;
-        let currentImageIndex = 0;
-        let countdownInterval = null;
-        let customerData = null;
-        let selectedSize = null;
-        let selectedOption = null; // New variable for product options (e.g., keychain type)
-        let filteredProducts = [...products]; // Untuk menyimpan produk setelah filter pencarian
-        let paymentProofFile = null; // Untuk menyimpan file yang diunggah
-
-        // Variabel untuk pemilihan ukuran promo
-        let promoJaslabMabaSize = null; // Ukuran Jaslab untuk bundle MABA
-        let promoWorkshirtKpMabaSize = null; // Ukuran Workshirt KP untuk bundle MABA
-        let promoJaslabAnakMetalSize = null; // Ukuran Jaslab untuk bundle Anak Metal
-
-        const dom = {
-          productsGrid: document.getElementById("products-grid"),
-          cartModal: document.getElementById("cart-modal"),
-          productDetailModal: document.getElementById("product-detail-modal"),
-          customerDataModal: document.getElementById("customer-data-modal"),
-          paymentModal: document.getElementById("payment-modal"),
-          successModal: document.getElementById("success-modal"),
-          productOverviewModal: document.getElementById("product-overview-modal"),
-          closeProductOverviewModalBtn: document.getElementById("close-product-overview-modal"),
-          openCartBtn: document.getElementById("open-cart-btn"),
-          checkoutBtn: document.getElementById("checkout-btn"),
-          cartItemsContainer: document.getElementById("cart-items"),
-          mainProductImage: document.getElementById("main-product-image"),
-          thumbnailContainer: document.getElementById("thumbnail-container"),
-          prevImageBtn: document.getElementById("prev-image-btn"),
-          nextImageBtn: document.getElementById("next-image-btn"),
-          detailProductName: document.getElementById("detail-product-name"),
-          detailProductDescription: document.getElementById("detail-product-description"), // New element
-          detailProductPrice: document.getElementById("detail-product-price"),
-          detailSizeContainer: document.getElementById("detail-size-container"),
-          detailSizeOptions: document.getElementById("detail-size-options"),
-          detailOptionContainer: document.getElementById("detail-option-container"), // New element
-          detailOptionLabel: document.getElementById("detail-option-label"), // New element
-          detailOptionOptions: document.getElementById("detail-option-options"), // New element
-          detailActionContainer: document.getElementById(
-            "detail-action-container"
-          ),
-          cartTotalEl: document.getElementById("cart-total"),
-          cartCountBadge: document.getElementById("cart-count-badge"),
-          customerForm: document.getElementById("customer-form"),
-          finishPaymentBtn: document.getElementById("finish-payment-btn"),
-          closeModalBtns: document.querySelectorAll(".close-modal-btn"),
-          orderSummaryItems: document.getElementById("order-summary-items"),
-          orderSummaryTotal: document.getElementById("order-summary-total"),
-          customerDataSummary: document.getElementById("customer-data-summary"),
-          countdownTimer: document.getElementById("countdown-timer"),
-          searchInput: document.getElementById("search-input"),
-          // Elemen baru untuk alamat pengiriman
-          deliveryOption: document.getElementById("delivery-option"),
-          pickupOption: document.getElementById("pickup-option"),
-          addressInputContainer: document.getElementById("address-input-container"),
-          paymentProofInput: document.getElementById("payment-proof"),
-
-          // Elemen untuk bundle Early Bird Maba
-          promoMabaCard: document.getElementById("promo-maba-card"), // Untuk overview dan promo utama
-          mainPromoCardMaba: document.getElementById("main-promo-card"), // Untuk overview dan promo utama
-          bundlePromoMabaModal: document.getElementById("bundle-promo-maba-modal"),
-          bundleMabaJaslabSizeOptions: document.getElementById("bundle-maba-jaslab-size-options"),
-          bundleMabaWorkshirtKpSizeOptions: document.getElementById("bundle-maba-workshirt-kp-size-options"),
-          addBundleMabaToCartBtn: document.getElementById("add-bundle-maba-to-cart-btn"),
-          bundleMabaJaslabPrice: document.getElementById("bundle-maba-jaslab-price"),
-          bundleMabaWorkshirtKpPrice: document.getElementById("bundle-maba-workshirt-kp-price"),
-          bundleMabaNormalPrice: document.getElementById("bundle-maba-normal-price"),
-          bundleMabaDiscountedPrice: document.getElementById("bundle-maba-discounted-price"),
-          bundleMabaSavingsMessage: document.getElementById("bundle-maba-savings-message"),
-
-          // Elemen untuk bundle Gue Anak Metal!
-          promoAnakMetalCard: document.getElementById("promo-anak-metal-card"),
-          mainPromoCardAnakMetal: document.getElementById("main-promo-anak-metal-card"),
-          bundlePromoAnakMetalModal: document.getElementById("bundle-promo-anak-metal-modal"),
-          bundleAnakMetalJaslabSizeOptions: document.getElementById("bundle-anak-metal-jaslab-size-options"),
-          addBundleAnakMetalToCartBtn: document.getElementById("add-bundle-anak-metal-to-cart-btn"),
-          bundleAnakMetalJaslabPrice: document.getElementById("bundle-anak-metal-jaslab-price"),
-          bundleAnakMetalNormalPrice: document.getElementById("bundle-anak-metal-normal-price"),
-          bundleAnakMetalDiscountedPrice: document.getElementById("bundle-anak-metal-discounted-price"),
-          bundleAnakMetalSavingsMessage: document.getElementById("bundle-anak-metal-savings-message"),
-
-          continueShoppingBtn: document.getElementById("continue-shopping-btn"), // New button for continue shopping
-
-          // New for "Nama untuk Bordir"
-          bordirNameContainer: document.getElementById("bordir-name-container"),
-          // Selector untuk input field nama bordir
-          bordirNameInput: document.querySelector('#bordir-name-container input[name="Nama untuk Bordir"]'),
-        };
-
-        const BUNDLE_DISCOUNT = 15000; // Define the discount amount for all bundles
-
-        const formatCurrency = (n) =>
-          new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            minimumFractionDigits: 0,
-          }).format(n);
         
-        // Updated calculatePrice function based on new pricing logic
-        const calculatePrice = (basePrice, size, productId = null) => {
-            let price = basePrice;
-            const sizeIncrements = {
-                "S": 0, "M": 0, "L": 0,
-                "XL": 1, "XXL": 2, "3XL": 3, "4XL": 4, "5XL": 5
-            };
-            
-            let incrementAmount = 0;
+        let incrementAmount = 0;
 
-            // Apply specific increment amounts based on productId
-            if (productId === 1) { // Jas laboratorium
-                incrementAmount = 10000;
-            } else if (productId === 2) { // Workshirt Kerja Praktik
-                incrementAmount = 5000;
-            }
-            // Add more product-specific increment amounts here if needed
-            // else {
-            //     incrementAmount = 0; // Default or no increment
-            // }
+        // Apply specific increment amounts based on productId
+        if (productId === 1) { // Jas laboratorium
+            incrementAmount = 10000;
+        } else if (productId === 2) { // Workshirt Kerja Praktik
+            incrementAmount = 5000;
+        }
+        // Add more product-specific increment amounts here if needed
 
-            const sizeIndex = sizeIncrements[size];
+        const sizeIndex = sizeIncrements[size];
 
-            if (sizeIndex > 0) { // Hanya berlaku jika ukuran adalah XL atau lebih besar
-                price = basePrice + (sizeIndex * incrementAmount);
-            }
-            return price;
-        };
+        if (sizeIndex > 0) { // Only apply if size is XL or larger
+            price = basePrice + (sizeIndex * incrementAmount);
+        }
+        return price;
+    };
 
-        // Fungsi untuk mengaktifkan/menonaktifkan visibilitas modal dan mengelola scroll body
-        const toggleModal = (modal, show) => {
-          modal.classList.toggle("visible", show);
-          if (show) {
-              document.body.style.overflow = 'hidden'; // Nonaktifkan scroll body
-              lucide.createIcons(); // Buat ulang ikon saat modal terlihat
-          } else {
-              // Hanya aktifkan kembali scroll jika tidak ada modal lain yang terlihat
-              const anyOtherModalVisible = Array.from(document.querySelectorAll('.modal-overlay, .product-overview-modal-overlay')).some(m => m.classList.contains('visible'));
-              if (!anyOtherModalVisible) {
-                  document.body.style.overflow = ''; // Aktifkan kembali scroll body
-              }
+    // Function to toggle modal visibility and manage body scroll
+    const toggleModal = (modal, show) => {
+      modal.classList.toggle("visible", show);
+      if (show) {
+          document.body.style.overflow = 'hidden'; // Disable body scroll
+          lucide.createIcons(); // Recreate icons when modal is visible
+      } else {
+          // Only re-enable scroll if no other modal is visible
+          const anyOtherModalVisible = Array.from(document.querySelectorAll('.modal-overlay, .product-overview-modal-overlay')).some(m => m.classList.contains('visible'));
+          if (!anyOtherModalVisible) {
+              document.body.style.overflow = ''; // Enable body scroll
           }
-        };
+      }
+    };
 
 
-        // Function Definitions (moved to top for scope visibility)
-        const renderProducts = (productsToRender) => {
-          dom.productsGrid.innerHTML = "";
-          if (productsToRender.length === 0) {
-              dom.productsGrid.innerHTML = `<p class="text-center text-gray-500 text-lg col-span-full">Tidak ada produk yang ditemukan.</p>`;
-              return;
-          }
-          productsToRender.forEach((product) => {
-            const productCard = `
-                        <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300" data-product-id="${
-                          product.id
-                        }">
-                            <img src="${product.image}" alt="${
-              product.name
-            }" class="w-full h-full object-cover pointer-events-none" onerror="this.onerror=null; this.src='assets/placeholder.png';">
-                            <div class="p-6 flex-grow flex flex-col pointer-events-none">
-                                <div class="flex-grow">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">${
-                                      product.name
-                                    }</h3>
-                                    <p class="text-lg font-semibold text-indigo-600 mb-4">${formatCurrency(
-                                      product.price
-                                    )}${product.hasSizes ? " (mulai)" : ""}</p>
-                                </div>
-                                <div class="mt-auto">
-                                    <button class="w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg">Lihat Detail</button>
-                                </div>
+    // Function Definitions (moved to top for scope visibility)
+    const renderProducts = (productsToRender) => {
+      dom.productsGrid.innerHTML = "";
+      if (productsToRender.length === 0) {
+          dom.productsGrid.innerHTML = `<p class="text-center text-gray-500 text-lg col-span-full">Tidak ada produk yang ditemukan.</p>`;
+          return;
+      }
+      productsToRender.forEach((product) => {
+        // Determine price to display on product card (original price, not strikethrough)
+        const displayPrice = product.price;
+
+        const productCard = `
+                    <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300" data-product-id="${
+                      product.id
+                    }">
+                        <img src="${product.image}" alt="${
+          product.name
+        }" class="w-full h-full object-cover pointer-events-none" onerror="this.onerror=null; this.src='assets/placeholder.png';">
+                        <div class="p-6 flex-grow flex flex-col pointer-events-none">
+                            <div class="flex-grow">
+                                <h3 class="text-xl font-bold text-gray-800 mb-2">${
+                                  product.name
+                                }</h3>
+                                <p class="text-lg font-semibold text-indigo-600 mb-4">${formatCurrency(
+                                  displayPrice
+                                )}${product.hasSizes ? " (mulai)" : ""}</p>
                             </div>
-                        </div>`;
-            dom.productsGrid.innerHTML += productCard;
-          });
-        };
-
-        const renderCart = () => {
-          dom.cartItemsContainer.innerHTML = "";
-          let total = 0,
-            itemCount = 0;
-          if (cart.length === 0) {
-            dom.cartItemsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">Keranjang belanja Anda kosong.</p>`;
-            dom.checkoutBtn.disabled = true;
-          } else {
-            cart.forEach((item) => {
-              const itemTotal = item.finalPrice * item.quantity;
-              total += itemTotal;
-              itemCount += item.quantity;
-
-              // If it's a bundle, display only the bundle name and its total price
-              if (item.isBundle) {
-                  dom.cartItemsContainer.innerHTML += `
-                    <div class="flex items-center justify-between py-4 border-b last:border-b-0">
-                        <div class="flex items-center gap-4">
-                            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
-                            <div>
-                                <h4 class="font-semibold">${item.name}</h4>
-                                <p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p>
+                            <div class="mt-auto">
+                                <button class="w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg">Lihat Detail</button>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 text-center">${item.quantity}</span>
-                            <button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}">
-                                <i data-lucide="trash-2" class="w-6 h-6"></i>
-                            </button>
                         </div>
                     </div>`;
-              } else {
-                  // Determine image path based on product ID and selected option for regular items
-                  let itemImage = item.image; // Default to product's main image
-                  if (item.id === 6) { // Keychain IMMt
-                      if (item.option === "Keychain Kain Bordir") {
-                          itemImage = "assets/keychain-immt-1.jpg";
-                      } else if (item.option === "Keychain Akrilik") {
-                          itemImage = "assets/keychain-immt-2.jpg";
-                      }
-                  } else if (item.id === 5) { // Sticker mobil
-                      if (item.option === "Stiker Fakultas Teknik") {
-                          itemImage = "assets/sticker-mobil-1.jpg";
-                      } else if (item.option === "Stiker Metalurgi") {
-                          itemImage = "assets/sticker-mobil-2.jpg";
-                      }
-                  }
+        dom.productsGrid.innerHTML += productCard;
+      });
+    };
 
-                  dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${
-                    itemImage
-                  }" alt="${
-                    item.name
-                  }" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${
-                    item.name
-                  } ${
-                    item.size ? `(${item.size})` : ""
-                  }${item.option ? ` - ${item.option}` : ""}</h4><p class="text-sm text-gray-500">${formatCurrency(
-                    item.finalPrice
-                  )}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${
-                    item.cartItemId
-                  }" data-change="-1">-</button><span class="px-3 text-center">${
-                    item.quantity
-                  }</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${
-                    item.cartItemId
-                  }" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${
-                    item.cartItemId
-                  }"><i data-lucide="trash-2" class="w-6 h-6"></i></button></div></div>`;
-              }
-            });
-            dom.checkoutBtn.disabled = false;
-          }
-          dom.cartTotalEl.textContent = formatCurrency(total);
-          dom.cartCountBadge.textContent = itemCount;
-          lucide.createIcons();
-        };
+    const renderCart = () => {
+      dom.cartItemsContainer.innerHTML = "";
+      let total = 0,
+        itemCount = 0;
+      if (cart.length === 0) {
+        dom.cartItemsContainer.innerHTML = `<p class="text-gray-500 text-center py-8">Keranjang belanja Anda kosong.</p>`;
+        dom.checkoutBtn.disabled = true;
+      } else {
+        cart.forEach((item) => {
+          const itemTotal = item.finalPrice * item.quantity;
+          total += itemTotal;
+          itemCount += item.quantity;
 
-        const addToCart = (productId, size = null, option = null, quantity = 1, isBundleItem = false) => {
-          const product = allProducts.find((p) => p.id === productId); // Use allProducts here to get correct product details
-          if (!product) {
-              console.error(`Product with ID ${productId} not found.`);
-              return;
-          }
-          let finalPrice = product.price;
-
-          if (product.hasSizes && size) {
-            finalPrice = calculatePrice(finalPrice, size, productId); // Pass productId to calculatePrice
-          }
-          
-          // This addToCart is for individual items. Bundles are handled separately
-          // No direct bundle discount application here anymore
-          // The isBundleItem flag is now unused for this function.
-
-          // Use option in cartItemId for products with options
-          const cartItemId = (size ? `${productId}-${size}` : `${productId}`) + (option ? `-${option}` : '');
-          let cartItem = cart.find((item) => item.cartItemId === cartItemId);
-
-          if (cartItem) {
-            cartItem.quantity += quantity;
-          } else {
-            cart.push({
-              ...product,
-              quantity: quantity,
-              size,
-              option, // Store the selected option
-              finalPrice,
-              cartItemId,
-              isBundle: false // Explicitly mark as non-bundle
-            });
-          }
-          updateUI();
-          renderDetailActionButtons();
-        };
-
-        const updateCartQuantity = (cartItemId, change) => {
-          let cartItem = cart.find((item) => item.cartItemId === cartItemId);
-          if (!cartItem || item.isBundle) { // Prevent quantity change for bundles in cart
-              return;
-          }
-          cartItem.quantity += change;
-          if (cartItem.quantity <= 0) {
-            cart = cart.filter((item) => item.cartItemId !== cartItemId);
-          }
-          updateUI();
-          renderDetailActionButtons();
-        };
-
-        const openProductDetail = (productId) => {
-          currentDetailProduct = allProducts.find((p) => p.id === productId); // Use allProducts here
-          if (!currentDetailProduct) return;
-          selectedSize = null;
-          selectedOption = null; // Reset selected option
-
-          dom.detailProductName.textContent = currentDetailProduct.name;
-          dom.detailProductDescription.innerHTML = currentDetailProduct.description || ''; // Display description
-          currentImageIndex = 0;
-          renderProductImages();
-          renderDetailActionButtons();
-
-          // Handle sizes
-          if (currentDetailProduct.hasSizes) {
-            dom.detailSizeContainer.style.display = 'block';
-            dom.detailSizeOptions.innerHTML = currentDetailProduct.sizes
-                              .map(
-                                (size) =>
-                                  `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                              )
-                              .join("");
-            dom.detailProductPrice.textContent =
-              formatCurrency(currentDetailProduct.price) + " (mulai)";
-          } else {
-            dom.detailSizeContainer.style.display = 'none';
-            dom.detailSizeOptions.innerHTML = "";
-            dom.detailProductPrice.textContent = formatCurrency(
-              currentDetailProduct.price
-            );
-          }
-
-          // Handle options (for Keychain IMMt and Sticker Mobil)
-          if (currentDetailProduct.hasOptions && currentDetailProduct.options) {
-            dom.detailOptionContainer.style.display = 'block';
-            dom.detailOptionOptions.innerHTML = currentDetailProduct.options
-                .map(option => `<button class="option-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-option="${option}">${option}</button>`)
-                .join("");
-            dom.detailOptionLabel.textContent = "Pilih Varian:"; // More specific label
-          } else {
-            dom.detailOptionContainer.style.display = 'none';
-            dom.detailOptionOptions.innerHTML = "";
-          }
-
-          toggleModal(dom.productDetailModal, true);
-          lucide.createIcons();
-        };
-
-        const renderProductImages = () => {
-          dom.mainProductImage.src =
-            currentDetailProduct.detailImages[currentImageIndex];
-          dom.mainProductImage.onerror = () => {
-            dom.mainProductImage.src =
-              "assets/placeholder.png";
-          };
-          dom.thumbnailContainer.innerHTML = "";
-          currentDetailProduct.detailImages.forEach((imgSrc, index) => {
-            const thumb = document.createElement("img");
-            thumb.src = imgSrc;
-            thumb.className = `w-16 h-16 object-cover rounded-md cursor-pointer border-2 opacity-60 hover:opacity-100 ${
-              index === currentImageIndex
-                ? "thumbnail-active"
-                : "border-transparent"
-            }`;
-            thumb.onclick = () => {
-              currentImageIndex = index;
-              renderProductImages();
-            };
-            dom.thumbnailContainer.appendChild(thumb);
-          });
-        };
-
-        const renderDetailActionButtons = () => {
-          if (!currentDetailProduct) return;
-
-          let cartHtml = '';
-          const existingCartItem = cart.find(item =>
-              item.id === currentDetailProduct.id &&
-              (!currentDetailProduct.hasSizes || item.size === selectedSize) &&
-              (!currentDetailProduct.hasOptions || item.option === selectedOption) &&
-              !item.isBundle // Exclude bundles from this check
-          );
-
-          if (existingCartItem) {
-            // Item is in cart, show quantity controls
-            cartHtml = `
-                <div class="flex items-center justify-center border rounded-lg w-full">
-                    <button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${existingCartItem.cartItemId}" data-change="-1" ${existingCartItem.quantity === 1 ? 'disabled' : ''}>-</button>
-                    <span class="px-6 font-bold text-xl">${existingCartItem.quantity} di keranjang</span>
-                    <button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${existingCartItem.cartItemId}" data-change="1">+</button>
+          // If it's a bundle, display only the bundle name and its total price
+          if (item.isBundle) {
+              dom.cartItemsContainer.innerHTML += `
+                <div class="flex items-center justify-between py-4 border-b last:border-b-0">
+                    <div class="flex items-center gap-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover">
+                        <div>
+                            <h4 class="font-semibold">${item.name}</h4>
+                            <p class="text-sm text-gray-500">${formatCurrency(item.finalPrice)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 text-center">${item.quantity}</span>
+                        <button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${item.cartItemId}">
+                            <i data-lucide="trash-2" class="w-6 h-6"></i>
+                        </button>
+                    </div>
                 </div>`;
           } else {
-            // Item not in cart, show "Add to Cart" button
-            let isDisabled = false;
-            if (currentDetailProduct.hasSizes && !selectedSize) {
-                isDisabled = true;
-            }
-            if (currentDetailProduct.hasOptions && !selectedOption) {
-                isDisabled = true;
-            }
-            cartHtml = `<button id="add-detail-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2" ${isDisabled ? 'disabled' : ''}>
-                    <i data-lucide="shopping-bag"></i>
-                    <span>Tambahkan ke Keranjang</span>
-                </button>`;
-          }
-          dom.detailActionContainer.innerHTML = cartHtml;
-          lucide.createIcons();
-        };
-        // End of Function Definitions
-
-
-        const updateUI = () => {
-          renderProducts(filteredProducts); // Render produk yang difilter
-          renderCart();
-        };
-
-        // Function to update bundle prices and savings message for Early Bird Maba
-        const updateBundleMabaPrices = () => {
-            const jaslabProduct = allProducts.find(p => p.id === 1);
-            const workshirtKpProduct = allProducts.find(p => p.id === 2);
-            const gamtekProduct = allProducts.find(p => p.id === 8);
-            const keychainImmtProduct = allProducts.find(p => p.id === 6);
-            const keychainMakaraProduct = allProducts.find(p => p.id === 7);
-            const stickerMobilProduct = allProducts.find(p => p.id === 5);
-
-            let currentJaslabPrice = 0;
-            if (promoJaslabMabaSize) {
-                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
-                dom.bundleMabaJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
-            } else {
-                dom.bundleMabaJaslabPrice.textContent = 'Pilih Ukuran';
-            }
-
-            let currentWorkshirtKpPrice = 0;
-            if (promoWorkshirtKpMabaSize) {
-                currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
-                dom.bundleMabaWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
-            } else {
-                dom.bundleMabaWorkshirtKpPrice.textContent = 'Pilih Ukuran';
-            }
-
-            const gamtekPrice = gamtekProduct.price;
-            const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
-            const keychainMakaraPrice = keychainMakaraProduct.price;
-            const stickerMobilPrice = stickerMobilProduct.price * 2; // Both stickers
-
-            const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabPrice : 0) + (promoWorkshirtKpMabaSize ? currentWorkshirtKpPrice : 0) + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
-            const discountedBundlePrice = totalNormalBundlePrice > BUNDLE_DISCOUNT ? totalNormalBundlePrice - BUNDLE_DISCOUNT : 0;
-            const savings = totalNormalBundlePrice - discountedBundlePrice;
-
-            dom.bundleMabaNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
-            dom.bundleMabaDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
-
-            // Enable/disable add to cart button based on size selections
-            if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
-                dom.addBundleMabaToCartBtn.disabled = false;
-                dom.bundleMabaSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
-            } else {
-                dom.addBundleMabaToCartBtn.disabled = true;
-                dom.bundleMabaSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
-            }
-        };
-
-        // Function to update bundle prices and savings message for Gue Anak Metal!
-        const updateBundleAnakMetalPrices = () => {
-            const jaslabProduct = allProducts.find(p => p.id === 1);
-            const topiImmtProduct = allProducts.find(p => p.id === 9);
-            const keychainImmtProduct = allProducts.find(p => p.id === 6);
-
-            let currentJaslabPrice = 0;
-            if (promoJaslabAnakMetalSize) {
-                currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
-                dom.bundleAnakMetalJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
-            } else {
-                dom.bundleAnakMetalJaslabPrice.textContent = 'Pilih Ukuran';
-            }
-
-            const topiImmtPrice = topiImmtProduct.price;
-            const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
-
-            const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabPrice : 0) + topiImmtPrice + keychainImmtPrice;
-            const discountedBundlePrice = totalNormalBundlePrice > BUNDLE_DISCOUNT ? totalNormalBundlePrice - BUNDLE_DISCOUNT : 0;
-            const savings = totalNormalBundlePrice - discountedBundlePrice;
-
-            dom.bundleAnakMetalNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
-            dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
-
-            // Enable/disable add to cart button based on size selections
-            if (promoJaslabAnakMetalSize) {
-                dom.addBundleAnakMetalToCartBtn.disabled = false;
-                dom.bundleAnakMetalSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
-            } else {
-                dom.addBundleAnakMetalToCartBtn.disabled = true;
-                dom.bundleAnakMetalSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
-            }
-        };
-
-
-        const startCountdown = () => {
-          clearInterval(countdownInterval);
-          let duration = 300;
-          countdownInterval = setInterval(() => {
-            const minutes = Math.floor(duration / 60)
-              .toString()
-              .padStart(2, "0");
-            const seconds = (duration % 60).toString().padStart(2, "0");
-            dom.countdownTimer.textContent = `${minutes}:${seconds}`;
-            if (--duration < 0) handlePaymentTimeout();
-          }, 1000);
-        };
-
-        const handlePaymentTimeout = () => {
-          clearInterval(countdownInterval);
-          // Menggunakan modal kustom sebagai pengganti alert()
-          showCustomAlert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
-          toggleModal(dom.paymentModal, false);
-          cart = [];
-          customerData = null;
-          dom.customerForm.reset();
-          updateUI();
-        };
-
-        // Implementasi modal kustom untuk alert
-        const showCustomAlert = (message) => {
-            const alertModal = document.createElement('div');
-            alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
-            alertModal.innerHTML = `
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center p-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4">Pemberitahuan</h3>
-                    <p class="text-gray-600 mb-6">${message}</p>
-                    <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700" id="close-alert-btn">OK</button>
-                </div>
-            `;
-            document.body.appendChild(alertModal);
-
-            alertModal.querySelector('#close-alert-btn').addEventListener('click', () => {
-                document.body.removeChild(alertModal);
-            });
-        };
-
-        const populateConfirmationPage = (formData) => {
-          dom.orderSummaryItems.innerHTML = "";
-          let orderItemsHtml = "";
-          let totalOrderAmount = 0; // Calculate total from what's displayed
-
-          cart.forEach(item => {
-              if (item.isBundle) {
-                  orderItemsHtml += `
-                      <div class="mt-4 mb-2 text-md font-bold text-gray-800">${item.name}</div>
-                      <ul class="ml-4 list-disc list-inside text-sm text-gray-700">
-                  `;
-                  item.bundleDetails.forEach(detail => {
-                      orderItemsHtml += `
-                          <li>${detail.name} ${detail.size ? `(${detail.size})` : ''}${detail.option ? ` - ${detail.option}` : ''} x ${detail.quantity} (${formatCurrency(detail.price * detail.quantity)})</li>
-                      `;
-                      totalOrderAmount += detail.price * detail.quantity; // Sum individual prices for total
-                  });
-                  orderItemsHtml += `</ul>`;
-              } else {
-                  orderItemsHtml += `
-                      <div class="flex justify-between text-sm">
-                          <span>${item.name} ${item.size ? `(${item.size})` : ''}${item.option ? ` - ${item.option}` : ''} x ${item.quantity}</span>
-                          <span>${formatCurrency(item.finalPrice * item.quantity)}</span>
-                      </div>
-                  `;
-                  totalOrderAmount += item.finalPrice * item.quantity; // Sum individual product prices
+              // Determine image path based on product ID and selected option for regular items
+              let itemImage = item.image; // Default to product's main image
+              if (item.id === 6) { // Keychain IMMt
+                  if (item.option === "Keychain Kain Bordir") {
+                      itemImage = "assets/keychain-immt-1.jpg";
+                  } else if (item.option === "Keychain Akrilik") {
+                      itemImage = "assets/keychain-immt-2.jpg";
+                  }
+              } else if (item.id === 5) { // Sticker mobil
+                  if (item.option === "Stiker Fakultas Teknik") {
+                      itemImage = "assets/sticker-mobil-1.jpg";
+                  } else if (item.option === "Stiker Metalurgi") {
+                      itemImage = "assets/sticker-mobil-2.jpg";
+                  }
               }
-          });
-          dom.orderSummaryItems.innerHTML = orderItemsHtml;
-          
-          // Re-calculate total based on individual items from bundleDetails for payment summary
-          // This ensures the displayed total matches the sum of the detailed items
-          dom.orderSummaryTotal.textContent = formatCurrency(totalOrderAmount);
 
-          dom.customerDataSummary.innerHTML = "";
-          customerData = {};
-          formData.forEach((value, key) => {
-            customerData[key] = value;
-            dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
-          });
-          // Add shipping cost disclaimer if "Dikirim ke Alamat" was selected
-          if (customerData.Pengiriman === "Dikirim ke Alamat") {
-              dom.customerDataSummary.innerHTML += `
-                  <div class="text-xs text-gray-500 mt-2">
-                      <p>Mohon diperhatikan bahwa harga di atas belum termasuk biaya pengiriman. Estimasi biaya pengiriman akan diinformasikan kemudian dan akan menjadi tanggung jawab pembeli. Terima kasih atas pengertian Anda.<br><br>Pengiriman dilakukan dari Kampus Universitas Indonesia </p>
+              dom.cartItemsContainer.innerHTML += `<div class="flex items-center justify-between py-4 border-b last:border-b-0"><div class="flex items-center gap-4"><img src="${
+                itemImage
+              }" alt="${
+                item.name
+              }" class="w-16 h-16 rounded-lg object-cover"><div><h4 class="font-semibold">${
+                item.name
+              } ${
+                item.size ? `(${item.size})` : ""
+              }${item.option ? ` - ${item.option}` : ""}</h4><p class="text-sm text-gray-500">${formatCurrency(
+                item.finalPrice
+              )}</p></div></div><div class="flex items-center gap-3"><div class="flex items-center border rounded-md"><button class="update-cart-quantity-btn p-2" data-cart-item-id="${
+                item.cartItemId
+              }" data-change="-1" ${item.quantity === 1 ? 'disabled' : ''}>-</button><span class="px-3 text-center">${
+                item.quantity
+              }</span><button class="update-cart-quantity-btn p-2" data-cart-item-id="${
+                item.cartItemId
+              }" data-change="1">+</button></div><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-cart-item-id="${
+                item.cartItemId
+              }"><i data-lucide="trash-2" class="w-6 h-6"></i></button></div></div>`;
+          }
+        });
+        dom.checkoutBtn.disabled = false;
+      }
+      dom.cartTotalEl.textContent = formatCurrency(total);
+      dom.cartCountBadge.textContent = itemCount;
+      lucide.createIcons();
+    };
+
+    const addToCart = (productId, size = null, option = null, quantity = 1) => {
+      const product = allProducts.find((p) => p.id === productId); // Use allProducts here to get correct product details
+      if (!product) {
+          console.error(`Product with ID ${productId} not found.`);
+          return;
+      }
+      let finalPrice = product.price;
+
+      if (product.hasSizes && size) {
+        finalPrice = calculatePrice(finalPrice, size, productId); // Pass productId to calculatePrice
+      }
+      
+      // Use option in cartItemId for products with options
+      const cartItemId = (size ? `${productId}-${size}` : `${productId}`) + (option ? `-${option}` : '');
+      let cartItem = cart.find((item) => item.cartItemId === cartItemId);
+
+      if (cartItem) {
+        cartItem.quantity += quantity;
+      } else {
+        cart.push({
+          ...product,
+          quantity: quantity,
+          size,
+          option, // Store the selected option
+          finalPrice,
+          cartItemId,
+          isBundle: false // Explicitly mark as non-bundle
+        });
+      }
+      updateUI();
+      renderDetailActionButtons();
+    };
+
+    const updateCartQuantity = (cartItemId, change) => {
+      let cartItem = cart.find((item) => item.cartItemId === cartItemId);
+      if (!cartItem || cartItem.isBundle) { // Prevent quantity change for bundles in cart
+          return;
+      }
+      cartItem.quantity += change;
+      if (cartItem.quantity <= 0) {
+        cart = cart.filter((item) => item.cartItemId !== cartItemId);
+      }
+      updateUI();
+      renderDetailActionButtons();
+    };
+
+    const openProductDetail = (productId) => {
+      currentDetailProduct = allProducts.find((p) => p.id === productId); // Use allProducts here
+      if (!currentDetailProduct) return;
+      selectedSize = null;
+      selectedOption = null; // Reset selected option
+
+      dom.detailProductName.textContent = currentDetailProduct.name;
+      dom.detailProductDescription.innerHTML = currentDetailProduct.description || ''; // Display description
+      currentImageIndex = 0;
+      renderProductImages();
+      renderDetailActionButtons();
+
+      // Handle sizes
+      if (currentDetailProduct.hasSizes) {
+        dom.detailSizeContainer.style.display = 'block';
+        dom.detailSizeOptions.innerHTML = currentDetailProduct.sizes
+                          .map(
+                            (size) =>
+                              `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                          )
+                          .join("");
+        
+        // Display strikethrough price if available
+        if (currentDetailProduct.strikethroughPrice) {
+            dom.detailNormalPrice.textContent = formatCurrency(currentDetailProduct.strikethroughPrice);
+            dom.detailNormalPrice.style.display = 'inline';
+        } else {
+            dom.detailNormalPrice.style.display = 'none';
+        }
+
+        dom.detailProductPrice.textContent =
+          formatCurrency(currentDetailProduct.price) + " (mulai)";
+      } else {
+        dom.detailSizeContainer.style.display = 'none';
+        dom.detailSizeOptions.innerHTML = "";
+        dom.detailNormalPrice.style.display = 'none'; // Hide strikethrough price if no sizes
+        dom.detailProductPrice.textContent = formatCurrency(
+          currentDetailProduct.price
+        );
+      }
+
+      // Handle options (for Keychain IMMt and Sticker Mobil)
+      if (currentDetailProduct.hasOptions && currentDetailProduct.options) {
+        dom.detailOptionContainer.style.display = 'block';
+        dom.detailOptionOptions.innerHTML = currentDetailProduct.options
+            .map(option => `<button class="option-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-option="${option}">${option}</button>`)
+            .join("");
+        dom.detailOptionLabel.textContent = "Pilih Varian:"; // More specific label
+      } else {
+        dom.detailOptionContainer.style.display = 'none';
+        dom.detailOptionOptions.innerHTML = "";
+      }
+
+      toggleModal(dom.productDetailModal, true);
+      lucide.createIcons();
+    };
+
+    const renderProductImages = () => {
+      dom.mainProductImage.src =
+        currentDetailProduct.detailImages[currentImageIndex];
+      dom.mainProductImage.onerror = () => {
+        dom.mainProductImage.src =
+          "assets/placeholder.png";
+      };
+      dom.thumbnailContainer.innerHTML = "";
+      currentDetailProduct.detailImages.forEach((imgSrc, index) => {
+        const thumb = document.createElement("img");
+        thumb.src = imgSrc;
+        thumb.className = `w-16 h-16 object-cover rounded-md cursor-pointer border-2 opacity-60 hover:opacity-100 ${
+          index === currentImageIndex
+            ? "thumbnail-active"
+            : "border-transparent"
+        }`;
+        thumb.onclick = () => {
+          currentImageIndex = index;
+          renderProductImages();
+        };
+        dom.thumbnailContainer.appendChild(thumb);
+      });
+    };
+
+    const renderDetailActionButtons = () => {
+      if (!currentDetailProduct) return;
+
+      let cartHtml = '';
+      const existingCartItem = cart.find(item =>
+          item.id === currentDetailProduct.id &&
+          (!currentDetailProduct.hasSizes || item.size === selectedSize) &&
+          (!currentDetailProduct.hasOptions || item.option === selectedOption) &&
+          !item.isBundle // Exclude bundles from this check
+      );
+
+      if (existingCartItem) {
+        // Item is in cart, show quantity controls
+        cartHtml = `
+            <div class="flex items-center justify-center border rounded-lg w-full">
+                <button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${existingCartItem.cartItemId}" data-change="-1" ${existingCartItem.quantity === 1 ? 'disabled' : ''}>-</button>
+                <span class="px-6 font-bold text-xl">${existingCartItem.quantity} di keranjang</span>
+                <button class="detail-quantity-btn p-4 flex-1" data-cart-item-id="${existingCartItem.cartItemId}" data-change="1">+</button>
+            </div>`;
+      } else {
+        // Item not in cart, show "Add to Cart" button
+        let isDisabled = false;
+        if (currentDetailProduct.hasSizes && !selectedSize) {
+            isDisabled = true;
+        }
+        if (currentDetailProduct.hasOptions && !selectedOption) {
+            isDisabled = true;
+        }
+        cartHtml = `<button id="add-detail-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2" ${isDisabled ? 'disabled' : ''}>
+                <i data-lucide="shopping-bag"></i>
+                <span>Tambahkan ke Keranjang</span>
+            </button>`;
+      }
+      dom.detailActionContainer.innerHTML = cartHtml;
+      lucide.createIcons();
+    };
+    // End of Function Definitions
+
+
+    const updateUI = () => {
+      renderProducts(filteredProducts); // Render filtered products
+      renderCart();
+    };
+
+    // Function to update bundle prices and savings message for Early Bird Maba
+    const updateBundleMabaPrices = () => {
+        const jaslabProduct = allProducts.find(p => p.id === 1);
+        const workshirtKpProduct = allProducts.find(p => p.id === 2);
+        const gamtekProduct = allProducts.find(p => p.id === 8);
+        const keychainImmtProduct = allProducts.find(p => p.id === 6);
+        const keychainMakaraProduct = allProducts.find(p => p.id === 7);
+        const stickerMobilProduct = allProducts.find(p => p.id === 5);
+
+        let currentJaslabPrice = 0;
+        let currentJaslabStrikethroughPrice = jaslabProduct.strikethroughPrice || jaslabProduct.price; // Use strikethrough if available
+        if (promoJaslabMabaSize) {
+            currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
+            currentJaslabStrikethroughPrice = calculatePrice(jaslabProduct.strikethroughPrice || jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id);
+            dom.bundleMabaJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+        } else {
+            dom.bundleMabaJaslabPrice.textContent = 'Pilih Ukuran';
+        }
+
+        let currentWorkshirtKpPrice = 0;
+        let currentWorkshirtKpStrikethroughPrice = workshirtKpProduct.strikethroughPrice || workshirtKpProduct.price;
+        if (promoWorkshirtKpMabaSize) {
+            currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
+            currentWorkshirtKpStrikethroughPrice = calculatePrice(workshirtKpProduct.strikethroughPrice || workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id);
+            dom.bundleMabaWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
+        } else {
+            dom.bundleMabaWorkshirtKpPrice.textContent = 'Pilih Ukuran';
+        }
+
+        const gamtekPrice = gamtekProduct.price;
+        const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+        const keychainMakaraPrice = keychainMakaraProduct.price;
+        const stickerMobilPrice = stickerMobilProduct.price * 2; // Both stickers
+
+        // Calculate total normal price using strikethrough prices if they exist, otherwise original price
+        const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabStrikethroughPrice : 0) + (promoWorkshirtKpMabaSize ? currentWorkshirtKpStrikethroughPrice : 0) + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
+        const discountedBundlePrice = (promoJaslabMabaSize && promoWorkshirtKpMabaSize) ? (currentJaslabPrice + currentWorkshirtKpPrice + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice - BUNDLE_DISCOUNT_AMOUNT) : 0;
+        
+        const savings = totalNormalBundlePrice - discountedBundlePrice;
+
+        dom.bundleMabaNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
+        dom.bundleMabaDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+
+        // Enable/disable add to cart button based on size selections
+        if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
+            dom.addBundleMabaToCartBtn.disabled = false;
+            dom.bundleMabaSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
+        } else {
+            dom.addBundleMabaToCartBtn.disabled = true;
+            dom.bundleMabaSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
+        }
+    };
+
+    // Function to update bundle prices and savings message for Gue Anak Metal!
+    const updateBundleAnakMetalPrices = () => {
+        const jaslabProduct = allProducts.find(p => p.id === 1);
+        const topiImmtProduct = allProducts.find(p => p.id === 9);
+        const keychainImmtProduct = allProducts.find(p => p.id === 6);
+
+        let currentJaslabPrice = 0;
+        let currentJaslabStrikethroughPrice = jaslabProduct.strikethroughPrice || jaslabProduct.price;
+        if (promoJaslabAnakMetalSize) {
+            currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
+            currentJaslabStrikethroughPrice = calculatePrice(jaslabProduct.strikethroughPrice || jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id);
+            dom.bundleAnakMetalJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+        } else {
+            dom.bundleAnakMetalJaslabPrice.textContent = 'Pilih Ukuran';
+        }
+
+        const topiImmtPrice = topiImmtProduct.price;
+        const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+
+        // Calculate total normal price using strikethrough prices if they exist, otherwise original price
+        const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabStrikethroughPrice : 0) + topiImmtPrice + keychainImmtPrice;
+        const discountedBundlePrice = promoJaslabAnakMetalSize ? (currentJaslabPrice + topiImmtPrice + keychainImmtPrice - BUNDLE_DISCOUNT_AMOUNT) : 0;
+        const savings = totalNormalBundlePrice - discountedBundlePrice;
+
+        dom.bundleAnakMetalNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
+        dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+
+        // Enable/disable add to cart button based on size selections
+        if (promoJaslabAnakMetalSize) {
+            dom.addBundleAnakMetalToCartBtn.disabled = false;
+            dom.bundleAnakMetalSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
+        } else {
+            dom.addBundleAnakMetalToCartBtn.disabled = true;
+            dom.bundleAnakMetalSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
+        }
+    };
+
+
+    const startCountdown = () => {
+      clearInterval(countdownInterval);
+      let duration = 300;
+      countdownInterval = setInterval(() => {
+        const minutes = Math.floor(duration / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (duration % 60).toString().padStart(2, "0");
+        dom.countdownTimer.textContent = `${minutes}:${seconds}`;
+        if (--duration < 0) handlePaymentTimeout();
+      }, 1000);
+    };
+
+    const handlePaymentTimeout = () => {
+      clearInterval(countdownInterval);
+      // Use custom modal instead of alert()
+      showCustomAlert("Waktu pembayaran telah habis. Silakan ulangi pesanan Anda.");
+      toggleModal(dom.paymentModal, false);
+      cart = [];
+      customerData = null;
+      dom.customerForm.reset();
+      updateUI();
+    };
+
+    // Custom alert modal implementation
+    const showCustomAlert = (message) => {
+        const alertModal = document.createElement('div');
+        alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
+        alertModal.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Pemberitahuan</h3>
+                <p class="text-gray-600 mb-6">${message}</p>
+                <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700" id="close-alert-btn">OK</button>
+            </div>
+        `;
+        document.body.appendChild(alertModal);
+
+        alertModal.querySelector('#close-alert-btn').addEventListener('click', () => {
+            document.body.removeChild(alertModal);
+        });
+    };
+
+    const populateConfirmationPage = (formData) => {
+      dom.orderSummaryItems.innerHTML = "";
+      let orderItemsHtml = "";
+      let totalOrderAmount = 0; // Calculate total from what's displayed
+
+      cart.forEach(item => {
+          if (item.isBundle) {
+              orderItemsHtml += `
+                  <div class="mt-4 mb-2 text-md font-bold text-gray-800">${item.name}</div>
+                  <ul class="ml-4 list-disc list-inside text-sm text-gray-700">
+              `;
+              item.bundleDetails.forEach(detail => {
+                  orderItemsHtml += `
+                      <li>${detail.name} ${detail.size ? `(${detail.size})` : ''}${detail.option ? ` - ${detail.option}` : ''} x ${detail.quantity} (${formatCurrency(detail.price * detail.quantity)})</li>
+                  `;
+                  totalOrderAmount += detail.price * detail.quantity; // Sum individual prices for total
+              });
+              orderItemsHtml += `</ul>`;
+          } else {
+              orderItemsHtml += `
+                  <div class="flex justify-between text-sm">
+                      <span>${item.name} ${item.size ? `(${item.size})` : ''}${item.option ? ` - ${item.option}` : ''} x ${item.quantity}</span>
+                      <span>${formatCurrency(item.finalPrice * item.quantity)}</span>
                   </div>
               `;
+              totalOrderAmount += item.finalPrice * item.quantity; // Sum individual product prices
           }
-        };
+      });
+      dom.orderSummaryItems.innerHTML = orderItemsHtml;
+      
+      // Re-calculate total based on individual items from bundleDetails for payment summary
+      // This ensures the displayed total matches the sum of the detailed items
+      dom.orderSummaryTotal.textContent = formatCurrency(totalOrderAmount);
 
-        // Fungsi untuk mengunggah bukti pembayaran ke Cloudinary
-        const uploadPaymentProof = async (file) => {
-            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+      dom.customerDataSummary.innerHTML = "";
+      customerData = {};
+      formData.forEach((value, key) => {
+        customerData[key] = value;
+        dom.customerDataSummary.innerHTML += `<div><strong>${key}:</strong> ${value}</div>`;
+      });
+      // Add shipping cost disclaimer if "Dikirim ke Alamat" was selected
+      if (customerData.Pengiriman === "Dikirim ke Alamat") {
+          dom.customerDataSummary.innerHTML += `
+              <div class="text-xs text-gray-500 mt-2">
+                  <p>Mohon diperhatikan bahwa harga di atas belum termasuk biaya pengiriman. Estimasi biaya pengiriman akan diinformasikan kemudian dan akan menjadi tanggung jawab pembeli. Terima kasih atas pengertian Anda.<br><br>Pengiriman dilakukan dari Kampus Universitas Indonesia </p>
+              </div>
+          `;
+      }
+    };
 
-            if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'ganti_dengan_cloud_name_anda' || !CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_UPLOAD_PRESET === 'ganti_dengan_upload_preset_anda') {
-                throw new Error("Kunci konfigurasi Cloudinary belum disetel. Harap perbarui CLOUDINARY_CLOUD_NAME dan CLOUDINARY_UPLOAD_PRESET.");
-            }
+    // Function to upload payment proof to Cloudinary
+    const uploadPaymentProof = async (file) => {
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
-            if (file.size > MAX_FILE_SIZE) {
-                throw new Error("Ukuran file terlalu besar. Maksimal 5MB.");
-            }
+        if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'ganti_dengan_cloud_name_anda' || !CLOUDINARY_UPLOAD_PRESET || CLOUDINARY_UPLOAD_PRESET === 'ganti_dengan_upload_preset_anda') {
+            throw new Error("Cloudinary configuration keys are not set. Please update CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET.");
+        }
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        if (file.size > MAX_FILE_SIZE) {
+            throw new Error("File size is too large. Maximum 5MB.");
+        }
 
-            // Membuat objek XHR untuk memantau progres upload
-            return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-                xhr.upload.addEventListener('progress', (event) => {
-                    if (event.lengthComputable) {
-                        const progress = (event.loaded / event.total) * 100;
-                        dom.finishPaymentBtn.textContent = `Mengunggah: ${progress.toFixed(0)}%`;
-                    }
-                });
+        // Create XHR object to monitor upload progress
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
 
-                xhr.onload = () => {
-                    if (xhr.status === 200) {
-                        const data = JSON.parse(xhr.responseText);
-                        resolve(data.secure_url); // URL aman dari gambar yang diunggah
-                    } else {
-                        const errorData = JSON.parse(xhr.responseText);
-                        console.error("Cloudinary Upload Error:", errorData);
-                        reject(new Error(`Gagal mengunggah ke Cloudinary: ${errorData.error.message || xhr.statusText}`));
-                    }
-                };
-
-                xhr.onerror = () => {
-                    reject(new Error('Kesalahan jaringan saat mengunggah ke Cloudinary.'));
-                };
-
-                xhr.send(formData);
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const progress = (event.loaded / event.total) * 100;
+                    dom.finishPaymentBtn.textContent = `Mengunggah: ${progress.toFixed(0)}%`;
+                }
             });
-        };
 
-        // Fungsi untuk mengirim pesanan ke Firestore
-        const submitOrder = async () => {
-            if (!paymentProofFile) {
-                // Menggunakan modal kustom sebagai pengganti alert()
-                showCustomAlert("Mohon unggah bukti pembayaran terlebih dahulu!");
-                return;
-            }
-
-            dom.finishPaymentBtn.disabled = true;
-            const originalButtonText = dom.finishPaymentBtn.textContent; // Simpan teks asli
-            
-            try {
-                // Mengunggah bukti pembayaran dan mendapatkan URL-nya
-                // Fungsi uploadPaymentProof akan mengupdate teks tombol dengan progres
-                const paymentProofURL = await uploadPaymentProof(paymentProofFile);
-                
-                // Pastikan URL bukti pembayaran sudah didapatkan sebelum melanjutkan
-                if (!paymentProofURL) {
-                    throw new Error("Gagal mendapatkan URL bukti pembayaran. URL kosong.");
-                }
-
-                // Flatten the cart items for Firebase persistence
-                const flattenedCart = [];
-                let totalAmountForFirestore = 0;
-                cart.forEach(item => {
-                    if (item.isBundle) {
-                        item.bundleDetails.forEach(detail => {
-                            flattenedCart.push({
-                                name: detail.name,
-                                size: detail.size || "N/A",
-                                option: detail.option || "N/A",
-                                quantity: detail.quantity,
-                                price: detail.price, // Use the price from bundleDetails (already includes Jaslab's discount if applicable)
-                            });
-                            totalAmountForFirestore += detail.price * detail.quantity;
-                        });
-                    } else {
-                        flattenedCart.push({
-                            name: item.name,
-                            size: item.size || "N/A",
-                            option: item.option || "N/A",
-                            quantity: item.quantity,
-                            price: item.finalPrice, // For non-bundle items, use their finalPrice
-                        });
-                        totalAmountForFirestore += item.finalPrice * item.quantity;
-                    }
-                });
-
-                // Objek data pesanan yang akan disimpan di Firestore
-                const orderData = {
-                    customer: customerData, // Data pelanggan dari form
-                    items: flattenedCart, // Barang-barang di keranjang yang sudah dirinci
-                    totalAmount: totalAmountForFirestore, // Total pembayaran dari rincian produk
-                    paymentProofURL: paymentProofURL, // URL bukti pembayaran yang diunggah
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(), // Timestamp saat pesanan dibuat
-                };
-
-                // Menambahkan data pesanan ke koleksi 'orders' di Firestore
-                await db.collection("orders").add(orderData);
-
-                console.log("Data sent to Firestore successfully.");
-                clearInterval(countdownInterval); // Menghentikan hitung mundur
-                toggleModal(dom.paymentModal, false); // Menutup modal pembayaran
-                toggleModal(dom.successModal, true); // Menampilkan modal sukses
-
-                // Menutup modal sukses dan mereset keranjang setelah beberapa detik
-                setTimeout(() => {
-                    toggleModal(dom.successModal, false);
-                    cart = []; // Mengosongkan keranjang
-                    customerData = null; // Menghapus data pelanggan
-                    paymentProofFile = null; // Menghapus file yang tersimpan
-                    dom.paymentProofInput.value = ''; // Mengosongkan input file
-                    dom.finishPaymentBtn.disabled = true; // Menonaktifkan tombol setelah sukses
-                    updateUI(); // Memperbarui UI
-                }, 4000);
-            } catch (error) {
-                console.error("Error submitting order:", error);
-                let errorMessage = "Maaf, terjadi kesalahan saat mengirim pesanan.";
-                if (error.message.includes("Ukuran file terlalu besar")) {
-                    errorMessage = error.message;
-                } else if (error.message.includes("Cloudinary")) {
-                    errorMessage = `Kesalahan unggah gambar ke Cloudinary: ${error.message}`;
-                } else if (error.message.includes("Kunci konfigurasi Cloudinary belum disetel")) {
-                    errorMessage = error.message;
-                }
-                // Jika error adalah dari Firestore (misalnya, masalah aturan keamanan Firestore)
-                else if (error.code && error.code.includes('firestore')) {
-                    errorMessage = `Kesalahan penyimpanan data (Firestore): ${error.message}. Harap periksa aturan keamanan Firestore Anda.`;
-                }
-                else {
-                    errorMessage = `Kesalahan umum: ${error.message}`;
-                }
-                // Menggunakan modal kustom sebagai pengganti alert()
-                showCustomAlert(`${errorMessage} Silakan coba lagi atau hubungi admin.`);
-            } finally {
-                dom.finishPaymentBtn.textContent = originalButtonText; // Mengembalikan teks tombol asli
-            }
-        };
-
-        // Fungsi untuk mengecek apakah ada item yang membutuhkan bordir di keranjang
-        const hasBordirItemsInCart = () => {
-            // IDs produk yang membutuhkan bordir (Jas laboratorium, Workshirt Kerja Praktik, Workshirt Metalurgi)
-            const bordirProductIds = [1, 2, 3]; 
-
-            for (const item of cart) {
-                if (item.isBundle) {
-                    // Cek jika ada produk dalam bundleDetails yang memerlukan bordir
-                    if (item.bundleDetails.some(detail => bordirProductIds.includes(detail.id))) {
-                        return true;
-                    }
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    resolve(data.secure_url); // Secure URL of the uploaded image
                 } else {
-                    // Cek jika produk individual memerlukan bordir
-                    if (bordirProductIds.includes(item.id)) {
-                        return true;
-                    }
+                    const errorData = JSON.parse(xhr.responseText);
+                    console.error("Cloudinary Upload Error:", errorData);
+                    reject(new Error(`Failed to upload to Cloudinary: ${errorData.error.message || xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Network error during Cloudinary upload.'));
+            };
+
+            xhr.send(formData);
+        });
+    };
+
+    // Function to submit order to Firestore
+    const submitOrder = async () => {
+        if (!paymentProofFile) {
+            // Use custom modal instead of alert()
+            showCustomAlert("Please upload payment proof first!");
+            return;
+        }
+
+        dom.finishPaymentBtn.disabled = true;
+        const originalButtonText = dom.finishPaymentBtn.textContent; // Save original button text
+        
+        try {
+            // Upload payment proof and get its URL
+            // The uploadPaymentProof function will update the button text with progress
+            const paymentProofURL = await uploadPaymentProof(paymentProofFile);
+            
+            // Ensure payment proof URL is obtained before proceeding
+            if (!paymentProofURL) {
+                throw new Error("Failed to get payment proof URL. URL is empty.");
+            }
+
+            // Flatten the cart items for Firebase persistence
+            const flattenedCart = [];
+            let totalAmountForFirestore = 0;
+            cart.forEach(item => {
+                if (item.isBundle) {
+                    item.bundleDetails.forEach(detail => {
+                        flattenedCart.push({
+                            name: detail.name,
+                            size: detail.size || "N/A",
+                            option: detail.option || "N/A",
+                            quantity: detail.quantity,
+                            price: detail.price, // Use the price from bundleDetails (already includes Jaslab's discount if applicable)
+                        });
+                        totalAmountForFirestore += detail.price * detail.quantity;
+                    });
+                } else {
+                    flattenedCart.push({
+                        name: item.name,
+                        size: item.size || "N/A",
+                        option: item.option || "N/A",
+                        quantity: item.quantity,
+                        price: item.finalPrice, // For non-bundle items, use their finalPrice
+                    });
+                    totalAmountForFirestore += item.finalPrice * item.quantity;
+                }
+            });
+
+            // Order data object to be stored in Firestore
+            const orderData = {
+                customer: customerData, // Customer data from form
+                items: flattenedCart, // Detailed items in cart
+                totalAmount: totalAmountForFirestore, // Total payment from product details
+                paymentProofURL: paymentProofURL, // Uploaded payment proof URL
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(), // Timestamp when order was created
+            };
+
+            // Add order data to the 'orders' collection in Firestore
+            await db.collection("orders").add(orderData);
+
+            console.log("Data sent to Firestore successfully.");
+            clearInterval(countdownInterval); // Stop countdown
+            toggleModal(dom.paymentModal, false); // Close payment modal
+            toggleModal(dom.successModal, true); // Display success modal
+
+            // Close success modal and reset cart after a few seconds
+            setTimeout(() => {
+                toggleModal(dom.successModal, false);
+                cart = []; // Empty cart
+                customerData = null; // Clear customer data
+                paymentProofFile = null; // Clear stored file
+                dom.paymentProofInput.value = ''; // Clear file input
+                dom.finishPaymentBtn.disabled = true; // Disable button after success
+                updateUI(); // Update UI
+            }, 4000);
+        } catch (error) {
+            console.error("Error submitting order:", error);
+            let errorMessage = "Sorry, an error occurred while submitting the order.";
+            if (error.message.includes("File size is too large")) {
+                errorMessage = error.message;
+            } else if (error.message.includes("Cloudinary")) {
+                errorMessage = `Image upload error to Cloudinary: ${error.message}`;
+            } else if (error.message.includes("Cloudinary configuration keys are not set")) {
+                errorMessage = error.message;
+            }
+            // If the error is from Firestore (e.g., Firestore security rules issue)
+            else if (error.code && error.code.includes('firestore')) {
+                errorMessage = `Data storage error (Firestore): ${error.message}. Please check your Firestore security rules.`;
+            }
+            else {
+                errorMessage = `General error: ${error.message}`;
+            }
+            // Use custom modal instead of alert()
+            showCustomAlert(`${errorMessage} Please try again or contact admin.`);
+        } finally {
+            dom.finishPaymentBtn.textContent = originalButtonText; // Restore original button text
+        }
+    };
+
+    // Function to check if any item in the cart requires embroidery
+    const hasBordirItemsInCart = () => {
+        // Product IDs that require embroidery (Jas laboratorium, Workshirt Kerja Praktik, Workshirt Metalurgi)
+        const bordirProductIds = [1, 2, 3]; 
+
+        for (const item of cart) {
+            if (item.isBundle) {
+                // Check if any product in bundleDetails requires embroidery
+                if (item.bundleDetails.some(detail => bordirProductIds.includes(detail.id))) {
+                    return true;
+                }
+            } else {
+                // Check if an individual product requires embroidery
+                if (bordirProductIds.includes(item.id)) {
+                    return true;
                 }
             }
-            return false;
-        };
+        }
+        return false;
+    };
 
-        // Event Listeners
-        dom.productsGrid.addEventListener("click", (e) => {
-          const productCard = e.target.closest(".product-card");
-          if (productCard) {
+    // Event Listeners
+
+    // Click listener for product grid (opens product detail)
+    dom.productsGrid.addEventListener("click", (e) => {
+        const productCard = e.target.closest(".product-card");
+        if (productCard) {
             const productId = parseInt(productCard.dataset.productId);
             openProductDetail(productId);
-          }
-        });
+        }
+    });
 
-        dom.detailActionContainer.addEventListener("click", (e) => {
-          const addBtn = e.target.closest("#add-detail-to-cart-btn");
-          const quantityBtn = e.target.closest(".detail-quantity-btn");
-
-          if (addBtn) {
+    // Main Event Listener using event delegation on document.body
+    document.body.addEventListener("click", (e) => {
+        // --- Handling Buttons in Product Detail Modal ---
+        const addBtn = e.target.closest("#add-detail-to-cart-btn");
+        if (addBtn) {
             if (currentDetailProduct.hasSizes && !selectedSize) {
-                showCustomAlert("Silakan pilih ukuran terlebih dahulu.");
+                showCustomAlert("Please select a size first.");
                 return;
             }
             if (currentDetailProduct.hasOptions && !selectedOption) {
-                showCustomAlert("Silakan pilih varian terlebih dahulu.");
+                showCustomAlert("Please select a variant first.");
                 return;
             }
-
             addToCart(currentDetailProduct.id, selectedSize, selectedOption);
             toggleModal(dom.productDetailModal, false);
-            // Show cart modal after adding item
-            toggleModal(dom.cartModal, true);
-          }
-          if (quantityBtn) {
-            const cartItemId = quantityBtn.dataset.cartItemId;
-            const change = parseInt(quantityBtn.dataset.change);
-            updateCartQuantity(cartItemId, change);
-          }
-        });
+            toggleModal(dom.cartModal, true); // Show cart after adding item
+            return; // Important: stop execution after handling event
+        }
 
-        document.body.addEventListener("click", (e) => {
-          // Handle size selection
-          if (e.target.matches("#detail-size-options .size-btn")) {
+        const detailQuantityBtn = e.target.closest(".detail-quantity-btn");
+        if (detailQuantityBtn) {
+            const cartItemId = detailQuantityBtn.dataset.cartItemId;
+            const change = parseInt(detailQuantityBtn.dataset.change);
+            updateCartQuantity(cartItemId, change);
+            return; // Important: stop execution after handling event
+        }
+
+        // --- Handling Buttons in Cart Modal ---
+        const updateCartBtn = e.target.closest(".update-cart-quantity-btn");
+        if (updateCartBtn) {
+            updateCartQuantity(
+                updateCartBtn.dataset.cartItemId,
+                parseInt(updateCartBtn.dataset.change)
+            );
+            return; // Important: stop execution after handling event
+        }
+
+        const removeCartBtn = e.target.closest(".remove-from-cart-btn");
+        if (removeCartBtn) {
+            cart = cart.filter(
+                (item) => item.cartItemId !== removeCartBtn.dataset.cartItemId
+            );
+            updateUI();
+            return; // Important: stop execution after handling event
+        }
+
+        // --- Handling Size Options in Product Detail (Already existed, but moved here for consistency) ---
+        if (e.target.matches("#detail-size-options .size-btn")) {
             document
               .querySelectorAll("#detail-size-options .size-btn")
               .forEach((btn) =>
@@ -1808,10 +1860,22 @@
               currentDetailProduct.id // Pass productId to calculatePrice
             );
             dom.detailProductPrice.textContent = formatCurrency(price);
+            
+            // Update strikethrough price if applicable
+            if (currentDetailProduct.strikethroughPrice) {
+                const strikethroughPrice = calculatePrice(currentDetailProduct.strikethroughPrice, selectedSize, currentDetailProduct.id);
+                dom.detailNormalPrice.textContent = formatCurrency(strikethroughPrice);
+                dom.detailNormalPrice.style.display = 'inline';
+            } else {
+                dom.detailNormalPrice.style.display = 'none';
+            }
+
             renderDetailActionButtons(); // Re-render button to enable quantity if a size is selected
-          }
-          // Handle option selection for keychains and sticker mobil
-          if (e.target.matches("#detail-option-options .option-btn")) {
+            return;
+        }
+
+        // --- Handling Option Choices in Product Detail (Already existed, but moved here for consistency) ---
+        if (e.target.matches("#detail-option-options .option-btn")) {
             document
               .querySelectorAll("#detail-option-options .option-btn")
               .forEach((btn) =>
@@ -1820,308 +1884,297 @@
             e.target.classList.add("bg-green-600", "text-white");
             selectedOption = e.target.dataset.option;
             renderDetailActionButtons(); // Re-render button to enable quantity if an option is selected
-          }
+            return;
+        }
 
-          // Handle bundle Maba size selections
-          if (e.target.matches('#bundle-maba-jaslab-size-options .size-btn')) {
-              dom.bundleMabaJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
-              e.target.classList.add("bg-green-600", "text-white");
-              promoJaslabMabaSize = e.target.dataset.size;
-              updateBundleMabaPrices();
-          }
-          if (e.target.matches('#bundle-maba-workshirt-kp-size-options .size-btn')) {
-              dom.bundleMabaWorkshirtKpSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
-              e.target.classList.add("bg-green-600", "text-white");
-              promoWorkshirtKpMabaSize = e.target.dataset.size;
-              updateBundleMabaPrices();
-          }
+        // --- Handling Size Options in Maba Bundle Modal ---
+        if (e.target.matches('#bundle-maba-jaslab-size-options .size-btn')) {
+            dom.bundleMabaJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+            e.target.classList.add("bg-green-600", "text-white");
+            promoJaslabMabaSize = e.target.dataset.size;
+            updateBundleMabaPrices();
+            return;
+        }
+        if (e.target.matches('#bundle-maba-workshirt-kp-size-options .size-btn')) {
+            dom.bundleMabaWorkshirtKpSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+            e.target.classList.add("bg-green-600", "text-white");
+            promoWorkshirtKpMabaSize = e.target.dataset.size;
+            updateBundleMabaPrices();
+            return;
+        }
 
-          // Handle bundle Anak Metal size selections
-          if (e.target.matches('#bundle-anak-metal-jaslab-size-options .size-btn')) {
-              dom.bundleAnakMetalJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
-              e.target.classList.add("bg-green-600", "text-white");
-              promoJaslabAnakMetalSize = e.target.dataset.size;
-              updateBundleAnakMetalPrices();
-          }
-        });
+        // --- Handling Size Options in Anak Metal Bundle Modal ---
+        if (e.target.matches('#bundle-anak-metal-jaslab-size-options .size-btn')) {
+            dom.bundleAnakMetalJaslabSizeOptions.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white"));
+            e.target.classList.add("bg-green-600", "text-white");
+            promoJaslabAnakMetalSize = e.target.dataset.size;
+            updateBundleAnakMetalPrices();
+            return;
+        }
 
-        dom.prevImageBtn.addEventListener("click", () => {
-          currentImageIndex =
-            (currentImageIndex - 1 + currentDetailProduct.detailImages.length) %
-            currentDetailProduct.detailImages.length;
-          renderProductImages();
-        });
+        // --- Handling General Close Modal Button ---
+        const closeModalBtn = e.target.closest(".close-modal-btn");
+        if (closeModalBtn) {
+            clearInterval(countdownInterval); // Ensure countdown stops if active
+            toggleModal(document.getElementById(closeModalBtn.dataset.modalId), false);
+            return;
+        }
+    });
 
-        dom.nextImageBtn.addEventListener("click", () => {
-          currentImageIndex =
-            (currentImageIndex + 1) % currentDetailProduct.detailImages.length;
-          renderProductImages();
-        });
+    // Image navigation listeners in product detail
+    dom.prevImageBtn.addEventListener("click", () => {
+      currentImageIndex =
+        (currentImageIndex - 1 + currentDetailProduct.detailImages.length) %
+        currentDetailProduct.detailImages.length;
+      renderProductImages();
+    });
 
-        dom.cartItemsContainer.addEventListener("click", (e) => {
-          const updateBtn = e.target.closest(".update-cart-quantity-btn");
-          const removeBtn = e.target.closest(".remove-from-cart-btn");
-          if (updateBtn)
-            updateCartQuantity(
-              updateBtn.dataset.cartItemId,
-              parseInt(updateBtn.dataset.change)
-            );
-          if (removeBtn) {
-            cart = cart.filter(
-              (item) => item.cartItemId !== removeBtn.dataset.cartItemId
-            );
-            updateUI();
-          }
-        });
-        dom.openCartBtn.addEventListener("click", () =>
-          toggleModal(dom.cartModal, true)
-        );
+    dom.nextImageBtn.addEventListener("click", () => {
+      currentImageIndex =
+        (currentImageIndex + 1) % currentDetailProduct.detailImages.length;
+      renderProductImages();
+    });
 
-        // Add event listener for "Continue Shopping" button
-        dom.continueShoppingBtn.addEventListener("click", () => {
-            toggleModal(dom.cartModal, false); // Close the cart modal
-        });
+    dom.openCartBtn.addEventListener("click", () =>
+      toggleModal(dom.cartModal, true)
+    );
 
-        dom.checkoutBtn.addEventListener("click", () => {
-          if (cart.length > 0) {
-            toggleModal(dom.cartModal, false);
-            // Show/hide "Nama untuk Bordir" field based on cart content
-            if (hasBordirItemsInCart()) {
-                dom.bordirNameContainer.style.display = 'block';
-                dom.bordirNameInput.setAttribute('required', ''); // Make it required
+    // Add event listener for "Continue Shopping" button
+    dom.continueShoppingBtn.addEventListener("click", () => {
+        toggleModal(dom.cartModal, false); // Close the cart modal
+    });
+
+    dom.checkoutBtn.addEventListener("click", () => {
+      if (cart.length > 0) {
+        toggleModal(dom.cartModal, false);
+        // Show/hide "Nama untuk Bordir" field based on cart content
+        if (hasBordirItemsInCart()) {
+            dom.bordirNameContainer.style.display = 'block';
+            dom.bordirNameInput.setAttribute('required', ''); // Make it required
+        } else {
+            dom.bordirNameContainer.style.display = 'none';
+            dom.bordirNameInput.value = ''; // Clear value if not needed
+            dom.bordirNameInput.removeAttribute('required'); // Make it optional
+        }
+        toggleModal(dom.customerDataModal, true);
+      }
+    });
+
+    // Toggle shipping address input based on radio button selection
+    dom.deliveryOption.addEventListener('change', () => {
+        dom.addressInputContainer.style.display = dom.deliveryOption.checked ? 'block' : 'none';
+        // Set required attribute for address fields if delivery is selected
+        dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
+            if (dom.deliveryOption.checked) {
+                input.setAttribute('required', '');
             } else {
-                dom.bordirNameContainer.style.display = 'none';
-                dom.bordirNameInput.value = ''; // Clear value if not needed
-                dom.bordirNameInput.removeAttribute('required'); // Make it optional
-            }
-            toggleModal(dom.customerDataModal, true);
-          }
-        });
-
-        // Toggle input alamat pengiriman berdasarkan pilihan radio button
-        dom.deliveryOption.addEventListener('change', () => {
-            dom.addressInputContainer.style.display = dom.deliveryOption.checked ? 'block' : 'none';
-            // Set atribut required untuk kolom alamat jika pengiriman dipilih
-            dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
-                if (dom.deliveryOption.checked) {
-                    input.setAttribute('required', '');
-                } else {
-                    input.removeAttribute('required');
-                    input.value = ''; // Hapus nilai jika tidak diperlukan
-                }
-            });
-        });
-
-        dom.pickupOption.addEventListener('change', () => {
-            dom.addressInputContainer.style.display = 'none';
-            // Hapus atribut required dan kosongkan nilai jika pengambilan dipilih
-            dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
                 input.removeAttribute('required');
-                input.value = '';
-            });
-        });
-
-
-        dom.customerForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-          populateConfirmationPage(new FormData(e.target));
-          toggleModal(dom.customerDataModal, false);
-          toggleModal(dom.paymentModal, true);
-          startCountdown();
-        });
-
-        // Aktifkan/nonaktifkan tombol penyelesaian pembayaran berdasarkan input file
-        dom.paymentProofInput.addEventListener('change', (e) => {
-            paymentProofFile = e.target.files[0];
-            if (paymentProofFile) {
-                dom.finishPaymentBtn.disabled = false;
-            } else {
-                dom.finishPaymentBtn.disabled = true;
+                input.value = ''; // Clear value if not needed
             }
         });
+    });
 
-
-        dom.finishPaymentBtn.addEventListener("click", submitOrder);
-
-        dom.closeModalBtns.forEach((btn) =>
-          btn.addEventListener("click", () => {
-            clearInterval(countdownInterval);
-            toggleModal(document.getElementById(btn.dataset.modalId), false);
-          })
-        );
-
-        // Event Listener Modal Ikhtisar Produk
-        dom.closeProductOverviewModalBtn.addEventListener("click", () => {
-            toggleModal(dom.productOverviewModal, false);
+    dom.pickupOption.addEventListener('change', () => {
+        dom.addressInputContainer.style.display = 'none';
+        // Remove required attribute and clear values if pickup is selected
+        dom.addressInputContainer.querySelectorAll('input, textarea').forEach(input => {
+            input.removeAttribute('required');
+            input.value = '';
         });
-
-        // Tangani klik pada item promo di modal ikhtisar dan bagian promo utama
-        const handlePromoClick = (e) => {
-            const promoItem = e.target.closest(".product-overview-item, #main-promo-card, #main-promo-anak-metal-card");
-            if (promoItem) {
-                const promoId = promoItem.dataset.promoId;
-                toggleModal(dom.productOverviewModal, false); // Tutup modal ikhtisar
-
-                if (promoId === 'maba') {
-                    // Buka modal bundle promo Maba
-                    const jaslabProduct = allProducts.find(p => p.id === 1);
-                    const workshirtKpProduct = allProducts.find(p => p.id === 2);
-
-                    if (jaslabProduct && workshirtKpProduct) {
-                        dom.bundleMabaJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
-                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                        ).join("");
-                        dom.bundleMabaWorkshirtKpSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
-                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                        ).join("");
-                        
-                        promoJaslabMabaSize = null; // Reset pilihan
-                        promoWorkshirtKpMabaSize = null; // Reset pilihan
-                        updateBundleMabaPrices(); // Update prices for the first time
-                        dom.addBundleMabaToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
-
-                        toggleModal(dom.bundlePromoMabaModal, true);
-                    }
-                } else if (promoId === 'anak-metal') {
-                    // Buka modal bundle promo Anak Metal
-                    const jaslabProduct = allProducts.find(p => p.id === 1);
-
-                    if (jaslabProduct) {
-                        dom.bundleAnakMetalJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
-                            `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
-                        ).join("");
-                        
-                        promoJaslabAnakMetalSize = null; // Reset pilihan
-                        updateBundleAnakMetalPrices(); // Update prices for the first time
-                        dom.addBundleAnakMetalToCartBtn.disabled = true; // Nonaktifkan tombol sampai ukuran dipilih
-
-                        toggleModal(dom.bundlePromoAnakMetalModal, true);
-                    }
-                }
-            }
-        };
-
-        dom.productOverviewModal.addEventListener("click", handlePromoClick);
-        dom.mainPromoCardMaba.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama Early Bird
-        dom.mainPromoCardAnakMetal.addEventListener("click", handlePromoClick); // Tambahkan listener ke kartu promo utama Gue Anak Metal!
+    });
 
 
-        // Handle adding the Early Bird Maba bundle to cart
-        dom.addBundleMabaToCartBtn.addEventListener('click', () => {
-            if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
+    dom.customerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      populateConfirmationPage(new FormData(e.target));
+      toggleModal(dom.customerDataModal, false);
+      toggleModal(dom.paymentModal, true);
+      startCountdown();
+    });
+
+    // Enable/disable payment completion button based on file input
+    dom.paymentProofInput.addEventListener('change', (e) => {
+        paymentProofFile = e.target.files[0];
+        if (paymentProofFile) {
+            dom.finishPaymentBtn.disabled = false;
+        } else {
+            dom.finishPaymentBtn.disabled = true;
+        }
+    });
+
+
+    dom.finishPaymentBtn.addEventListener("click", submitOrder);
+
+    // Product Overview Modal Event Listener
+    dom.closeProductOverviewModalBtn.addEventListener("click", () => {
+        toggleModal(dom.productOverviewModal, false);
+    });
+
+    // Handle clicks on promo items in overview modal and main promo section
+    const handlePromoClick = (e) => {
+        const promoItem = e.target.closest(".product-overview-item, #main-promo-card, #main-promo-anak-metal-card");
+        if (promoItem) {
+            const promoId = promoItem.dataset.promoId;
+            toggleModal(dom.productOverviewModal, false); // Close overview modal
+
+            if (promoId === 'maba') {
+                // Open Maba bundle promo modal
                 const jaslabProduct = allProducts.find(p => p.id === 1);
                 const workshirtKpProduct = allProducts.find(p => p.id === 2);
-                const gamtekProduct = allProducts.find(p => p.id === 8);
-                const keychainImmtProduct = allProducts.find(p => p.id === 6);
-                const keychainMakaraProduct = allProducts.find(p => p.id === 7);
-                const stickerMobilProduct = allProducts.find(p => p.id === 5);
 
-                // Calculate individual item prices for bundleDetails, with Jaslab discount applied
-                // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
-                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
-                const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
-                
-                const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
-                const gamtekPrice = gamtekProduct.price;
-                const keychainImmtPrice = keychainImmtProduct.price;
-                const keychainMakaraPrice = keychainMakaraProduct.price;
-                const stickerMobilPrice = stickerMobilProduct.price;
+                if (jaslabProduct && workshirtKpProduct) {
+                    dom.bundleMabaJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
+                        `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                    ).join("");
+                    dom.bundleMabaWorkshirtKpSizeOptions.innerHTML = workshirtKpProduct.sizes.map(size =>
+                        `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                    ).join("");
+                    
+                    promoJaslabMabaSize = null; // Reset selection
+                    promoWorkshirtKpMabaSize = null; // Reset selection
+                    updateBundleMabaPrices(); // Update prices for the first time
+                    dom.addBundleMabaToCartBtn.disabled = true; // Disable button until size is selected
 
-                const bundleDetails = [
-                    { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabMabaSize, option: null, quantity: 1, price: jaslabPriceWithBundleDiscount > 0 ? jaslabPriceWithBundleDiscount : 0 },
-                    { id: workshirtKpProduct.id, name: workshirtKpProduct.name, size: promoWorkshirtKpMabaSize, option: null, quantity: 1, price: workshirtKpPrice },
-                    { id: gamtekProduct.id, name: gamtekProduct.name, size: null, option: null, quantity: 1, price: gamtekPrice },
-                    { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Kain Bordir", quantity: 1, price: keychainImmtPrice },
-                    { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Akrilik", quantity: 1, price: keychainImmtPrice },
-                    { id: keychainMakaraProduct.id, name: keychainMakaraProduct.name, size: null, option: null, quantity: 1, price: keychainMakaraPrice },
-                    { id: stickerMobilProduct.id, name: stickerMobilProduct.name, size: null, option: "Stiker Fakultas Teknik", quantity: 1, price: stickerMobilPrice },
-                    { id: stickerMobilProduct.id, name: stickerMobilProduct.name, size: null, option: "Stiker Metalurgi", quantity: 1, price: stickerMobilPrice }
-                ];
-
-                // Hitung total harga bundle dari detail item yang sudah didiskon
-                const totalBundlePrice = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-                const bundleCartItem = {
-                    cartItemId: 'bundle-early-bird-maba', // Unique ID for this bundle type in cart
-                    id: 'bundle-early-bird-maba-id', // Generic ID for bundle recognition
-                    name: 'Early Bird Mahasiswa Baru Bundle',
-                    image: 'assets/promo-maba.jpg',
-                    quantity: 1,
-                    finalPrice: totalBundlePrice, // This is the total price displayed in cart
-                    isBundle: true,
-                    bundleDetails: bundleDetails // Detailed list for Firebase & payment summary
-                };
-                cart.push(bundleCartItem);
-                updateUI(); // Memanggil updateUI untuk memperbarui tampilan keranjang
-                
-                toggleModal(dom.bundlePromoMabaModal, false);
-                toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
-                showCustomAlert("Bundle Early Bird Mahasiswa Baru telah ditambahkan ke keranjang Anda!");
-            } else {
-                showCustomAlert("Silakan pilih ukuran Jaslab dan Workshirt KP terlebih dahulu.");
-            }
-        });
-
-        // Handle adding the Gue Anak Metal! bundle to cart
-        dom.addBundleAnakMetalToCartBtn.addEventListener('click', () => {
-            if (promoJaslabAnakMetalSize) {
+                    toggleModal(dom.bundlePromoMabaModal, true);
+                }
+            } else if (promoId === 'anak-metal') {
+                // Open Anak Metal bundle promo modal
                 const jaslabProduct = allProducts.find(p => p.id === 1);
-                const topiImmtProduct = allProducts.find(p => p.id === 9);
-                const keychainImmtProduct = allProducts.find(p => p.id === 6);
 
-                // Calculate individual item prices for bundleDetails, with Jaslab discount applied
-                // Harga jaslab yang disesuaikan ukuran, lalu dikurangi diskon bundle
-                const jaslabPriceAfterSize = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
-                const jaslabPriceWithBundleDiscount = jaslabPriceAfterSize - BUNDLE_DISCOUNT;
+                if (jaslabProduct) {
+                    dom.bundleAnakMetalJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size =>
+                        `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`
+                    ).join("");
+                    
+                    promoJaslabAnakMetalSize = null; // Reset selection
+                    updateBundleAnakMetalPrices(); // Update prices for the first time
+                    dom.addBundleAnakMetalToCartBtn.disabled = true; // Disable button until size is selected
 
-                const topiImmtPrice = topiImmtProduct.price;
-                const keychainImmtPrice = keychainImmtProduct.price;
-
-                const bundleDetails = [
-                    { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabAnakMetalSize, option: null, quantity: 1, price: jaslabPriceWithBundleDiscount > 0 ? jaslabPriceWithBundleDiscount : 0 },
-                    { id: topiImmtProduct.id, name: topiImmtProduct.name, size: null, option: null, quantity: 1, price: topiImmtPrice },
-                    { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Kain Bordir", quantity: 1, price: keychainImmtPrice },
-                    { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Akrilik", quantity: 1, price: keychainImmtPrice }
-                ];
-
-                // Hitung total harga bundle dari detail item yang sudah didiskon
-                const totalBundlePrice = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-                const bundleCartItem = {
-                    cartItemId: 'bundle-gue-anak-metal', // Unique ID for this bundle type in cart
-                    id: 'bundle-gue-anak-metal-id', // Generic ID for bundle recognition
-                    name: 'Gue Anak Metal! Bundle',
-                    image: 'assets/promo-anak-metal-1.jpg',
-                    quantity: 1,
-                    finalPrice: totalBundlePrice, // This is the total price displayed in cart
-                    isBundle: true,
-                    bundleDetails: bundleDetails // Detailed list for Firebase & payment summary
-                };
-                cart.push(bundleCartItem);
-                updateUI(); // Memanggil updateUI untuk memperbarui tampilan keranjang
-                
-                toggleModal(dom.bundlePromoAnakMetalModal, false); // Tutup modal Anak Metal
-                toggleModal(dom.cartModal, true); // Tampilkan keranjang dengan semua item
-                showCustomAlert("Bundle Gue Anak Metal! telah ditambahkan ke keranjang Anda!");
-            } else {
-                showCustomAlert("Silakan pilih ukuran Jaslab terlebih dahulu.");
+                    toggleModal(dom.bundlePromoAnakMetalModal, true);
+                }
             }
-        });
+        }
+    };
 
-        // Fungsionalitas Pencarian
-        dom.searchInput.addEventListener("input", (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            // Filter hanya produk yang sudah ditandai `inBundle: true`
-            filteredProducts = products.filter(product =>
-                product.name.toLowerCase().includes(searchTerm)
-            );
-            renderProducts(filteredProducts);
-        });
+    dom.productOverviewModal.addEventListener("click", handlePromoClick);
+    dom.mainPromoCardMaba.addEventListener("click", handlePromoClick); // Add listener to main Early Bird promo card
+    dom.mainPromoCardAnakMetal.addEventListener("click", handlePromoClick); // Add listener to main Gue Anak Metal! promo card
 
-        // Inisialisasi awal saat halaman dimuat
-        updateUI();
-        toggleModal(dom.productOverviewModal, true); // Tampilkan modal ikhtisar produk saat memuat
-      });
+
+    // Handle adding the Early Bird Maba bundle to cart
+    dom.addBundleMabaToCartBtn.addEventListener('click', () => {
+        if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
+            const jaslabProduct = allProducts.find(p => p.id === 1);
+            const workshirtKpProduct = allProducts.find(p => p.id === 2);
+            const gamtekProduct = allProducts.find(p => p.id === 8);
+            const keychainImmtProduct = allProducts.find(p => p.id === 6);
+            const keychainMakaraProduct = allProducts.find(p => p.id === 7);
+            const stickerMobilProduct = allProducts.find(p => p.id === 5);
+
+            // Calculate individual item prices for bundleDetails
+            const jaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id);
+            const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id);
+            const gamtekPrice = gamtekProduct.price;
+            const keychainImmtPrice = keychainImmtProduct.price;
+            const keychainMakaraPrice = keychainMakaraProduct.price;
+            const stickerMobilPrice = stickerMobilProduct.price;
+
+            const bundleDetails = [
+                { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabMabaSize, option: null, quantity: 1, price: jaslabPrice },
+                { id: workshirtKpProduct.id, name: workshirtKpProduct.name, size: promoWorkshirtKpMabaSize, option: null, quantity: 1, price: workshirtKpPrice },
+                { id: gamtekProduct.id, name: gamtekProduct.name, size: null, option: null, quantity: 1, price: gamtekPrice },
+                { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Kain Bordir", quantity: 1, price: keychainImmtPrice },
+                { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Akrilik", quantity: 1, price: keychainImmtPrice },
+                { id: keychainMakaraProduct.id, name: keychainMakaraProduct.name, size: null, option: null, quantity: 1, price: keychainMakaraPrice },
+                { id: stickerMobilProduct.id, name: stickerMobilProduct.name, size: null, option: "Stiker Fakultas Teknik", quantity: 1, price: stickerMobilPrice },
+                { id: stickerMobilProduct.id, name: stickerMobilProduct.name, size: null, option: "Stiker Metalurgi", quantity: 1, price: stickerMobilPrice }
+            ];
+
+            // Calculate total price of bundle before discount
+            let totalBundlePriceBeforeDiscount = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Apply the fixed bundle discount
+            const finalBundlePrice = totalBundlePriceBeforeDiscount - BUNDLE_DISCOUNT_AMOUNT;
+
+            const bundleCartItem = {
+                cartItemId: 'bundle-early-bird-maba', // Unique ID for this bundle type in cart
+                id: 'bundle-early-bird-maba-id', // Generic ID for bundle recognition
+                name: 'Early Bird Mahasiswa Baru Bundle',
+                image: 'assets/promo-maba.jpg',
+                quantity: 1,
+                finalPrice: finalBundlePrice, // This is the total price displayed in cart
+                isBundle: true,
+                bundleDetails: bundleDetails // Detailed list for Firebase & payment summary
+            };
+            cart.push(bundleCartItem);
+            updateUI(); // Call updateUI to refresh cart display
+            
+            toggleModal(dom.bundlePromoMabaModal, false);
+            toggleModal(dom.cartModal, true); // Show cart with all items
+            showCustomAlert("Bundle Early Bird Mahasiswa Baru telah ditambahkan ke keranjang Anda!");
+        } else {
+            showCustomAlert("Please select Jaslab and Workshirt KP sizes first.");
+        }
+    });
+
+    // Handle adding the Gue Anak Metal! bundle to cart
+    dom.addBundleAnakMetalToCartBtn.addEventListener('click', () => {
+        if (promoJaslabAnakMetalSize) {
+            const jaslabProduct = allProducts.find(p => p.id === 1);
+            const topiImmtProduct = allProducts.find(p => p.id === 9);
+            const keychainImmtProduct = allProducts.find(p => p.id === 6);
+
+            // Calculate individual item prices for bundleDetails
+            const jaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id);
+            const topiImmtPrice = topiImmtProduct.price;
+            const keychainImmtPrice = keychainImmtProduct.price;
+
+            const bundleDetails = [
+                { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabAnakMetalSize, option: null, quantity: 1, price: jaslabPrice },
+                { id: topiImmtProduct.id, name: topiImmtProduct.name, size: null, option: null, quantity: 1, price: topiImmtPrice },
+                { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Kain Bordir", quantity: 1, price: keychainImmtPrice },
+                { id: keychainImmtProduct.id, name: keychainImmtProduct.name, size: null, option: "Keychain Akrilik", quantity: 1, price: keychainImmtPrice }
+            ];
+
+            // Calculate total price of bundle before discount
+            let totalBundlePriceBeforeDiscount = bundleDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Apply the fixed bundle discount
+            const finalBundlePrice = totalBundlePriceBeforeDiscount - BUNDLE_DISCOUNT_AMOUNT;
+
+            const bundleCartItem = {
+                cartItemId: 'bundle-gue-anak-metal', // Unique ID for this bundle type in cart
+                id: 'bundle-gue-anak-metal-id', // Generic ID for bundle recognition
+                name: 'Gue Anak Metal! Bundle',
+                image: 'assets/promo-anak-metal-1.jpg',
+                quantity: 1,
+                finalPrice: finalBundlePrice, // This is the total price displayed in cart
+                isBundle: true,
+                bundleDetails: bundleDetails // Detailed list for Firebase & payment summary
+            };
+            cart.push(bundleCartItem);
+            updateUI(); // Call updateUI to refresh cart display
+            
+            toggleModal(dom.bundlePromoAnakMetalModal, false); // Close Anak Metal modal
+            toggleModal(dom.cartModal, true); // Show cart with all items
+            showCustomAlert("Bundle Gue Anak Metal! has been added to your cart!");
+        } else {
+            showCustomAlert("Please select Jaslab size first.");
+        }
+    });
+
+    // Search functionality
+    dom.searchInput.addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        // Filter only products marked `inBundle: true`
+        filteredProducts = products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filteredProducts);
+    });
+
+    // Initial setup when page loads
+    updateUI();
+    toggleModal(dom.productOverviewModal, true); // Show product overview modal on load
+  });
   </script>
  </body>
 </html>
