@@ -407,14 +407,20 @@
                     <div id="bundle-maba-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Jaslab akan dirender di sini -->
                     </div>
-                    <p id="bundle-maba-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    <div class="flex items-baseline mb-2">
+                        <p id="bundle-maba-jaslab-strikethrough-price" class="text-base font-semibold text-gray-500 strikethrough-price" style="display: none;"></p>
+                        <p id="bundle-maba-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    </div>
                 </div>
                 <div class="mt-4 mb-6">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt Kerja Praktik:</p>
                     <div id="bundle-maba-workshirt-kp-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Workshirt KP akan dirender di sini -->
                     </div>
-                    <p id="bundle-maba-workshirt-kp-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    <div class="flex items-baseline mb-2">
+                        <p id="bundle-maba-workshirt-kp-strikethrough-price" class="text-base font-semibold text-gray-500 strikethrough-price" style="display: none;"></p>
+                        <p id="bundle-maba-workshirt-kp-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    </div>
                 </div>
             </div>
             <div class="mt-auto pt-4 border-t">
@@ -457,7 +463,10 @@
                     <div id="bundle-anak-metal-jaslab-size-options" class="flex flex-wrap gap-3 mb-2">
                         <!-- Ukuran Jaslab akan dirender di sini -->
                     </div>
-                    <p id="bundle-anak-metal-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    <div class="flex items-baseline mb-2">
+                        <p id="bundle-anak-metal-jaslab-strikethrough-price" class="text-base font-semibold text-gray-500 strikethrough-price" style="display: none;"></p>
+                        <p id="bundle-anak-metal-jaslab-price" class="text-lg font-semibold text-indigo-600">Rp 0</p>
+                    </div>
                 </div>
             </div>
             <div class="mt-auto pt-4 border-t">
@@ -1079,7 +1088,9 @@
       bundleMabaWorkshirtKpSizeOptions: document.getElementById("bundle-maba-workshirt-kp-size-options"),
       addBundleMabaToCartBtn: document.getElementById("add-bundle-maba-to-cart-btn"),
       bundleMabaJaslabPrice: document.getElementById("bundle-maba-jaslab-price"),
+      bundleMabaJaslabStrikethroughPrice: document.getElementById("bundle-maba-jaslab-strikethrough-price"), // New element
       bundleMabaWorkshirtKpPrice: document.getElementById("bundle-maba-workshirt-kp-price"),
+      bundleMabaWorkshirtKpStrikethroughPrice: document.getElementById("bundle-maba-workshirt-kp-strikethrough-price"), // New element
       bundleMabaNormalPrice: document.getElementById("bundle-maba-normal-price"),
       bundleMabaDiscountedPrice: document.getElementById("bundle-maba-discounted-price"),
       bundleMabaSavingsMessage: document.getElementById("bundle-maba-savings-message"),
@@ -1091,6 +1102,7 @@
       bundleAnakMetalJaslabSizeOptions: document.getElementById("bundle-anak-metal-jaslab-size-options"),
       addBundleAnakMetalToCartBtn: document.getElementById("add-bundle-anak-metal-to-cart-btn"),
       bundleAnakMetalJaslabPrice: document.getElementById("bundle-anak-metal-jaslab-price"),
+      bundleAnakMetalJaslabStrikethroughPrice: document.getElementById("bundle-anak-metal-jaslab-strikethrough-price"), // New element
       bundleAnakMetalNormalPrice: document.getElementById("bundle-anak-metal-normal-price"),
       bundleAnakMetalDiscountedPrice: document.getElementById("bundle-anak-metal-discounted-price"),
       bundleAnakMetalSavingsMessage: document.getElementById("bundle-anak-metal-savings-message"),
@@ -1163,8 +1175,10 @@
           return;
       }
       productsToRender.forEach((product) => {
-        // Determine price to display on product card (original price, not strikethrough)
+        // Determine price to display on product card (original price)
         const displayPrice = product.price;
+        // Determine strikethrough price if available
+        const displayStrikethroughPrice = product.strikethroughPrice;
 
         const productCard = `
                     <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-1 transition-transform duration-300" data-product-id="${
@@ -1178,9 +1192,12 @@
                                 <h3 class="text-xl font-bold text-gray-800 mb-2">${
                                   product.name
                                 }</h3>
-                                <p class="text-lg font-semibold text-indigo-600 mb-4">${formatCurrency(
+                                <div class="flex items-baseline mb-4">
+                                    ${displayStrikethroughPrice ? `<p class="text-lg font-semibold text-gray-500 strikethrough-price">${formatCurrency(displayStrikethroughPrice)}</p>` : ''}
+                                    <p class="text-lg font-semibold text-indigo-600">${formatCurrency(
                                   displayPrice
                                 )}${product.hasSizes ? " (mulai)" : ""}</p>
+                                </div>
                             </div>
                             <div class="mt-auto">
                                 <button class="w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg">Lihat Detail</button>
@@ -1453,8 +1470,11 @@
             currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id); // Pass productId
             currentJaslabStrikethroughPrice = calculatePrice(jaslabProduct.strikethroughPrice || jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id);
             dom.bundleMabaJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+            dom.bundleMabaJaslabStrikethroughPrice.textContent = formatCurrency(currentJaslabStrikethroughPrice);
+            dom.bundleMabaJaslabStrikethroughPrice.style.display = 'inline';
         } else {
             dom.bundleMabaJaslabPrice.textContent = 'Pilih Ukuran';
+            dom.bundleMabaJaslabStrikethroughPrice.style.display = 'none';
         }
 
         let currentWorkshirtKpPrice = 0;
@@ -1463,8 +1483,11 @@
             currentWorkshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id); // Pass productId
             currentWorkshirtKpStrikethroughPrice = calculatePrice(workshirtKpProduct.strikethroughPrice || workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id);
             dom.bundleMabaWorkshirtKpPrice.textContent = formatCurrency(currentWorkshirtKpPrice);
+            dom.bundleMabaWorkshirtKpStrikethroughPrice.textContent = formatCurrency(currentWorkshirtKpStrikethroughPrice);
+            dom.bundleMabaWorkshirtKpStrikethroughPrice.style.display = 'inline';
         } else {
             dom.bundleMabaWorkshirtKpPrice.textContent = 'Pilih Ukuran';
+            dom.bundleMabaWorkshirtKpStrikethroughPrice.style.display = 'none';
         }
 
         const gamtekPrice = gamtekProduct.price;
@@ -1473,13 +1496,20 @@
         const stickerMobilPrice = stickerMobilProduct.price * 2; // Both stickers
 
         // Calculate total normal price using strikethrough prices if they exist, otherwise original price
-        const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabStrikethroughPrice : 0) + (promoWorkshirtKpMabaSize ? currentWorkshirtKpStrikethroughPrice : 0) + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
-        const discountedBundlePrice = (promoJaslabMabaSize && promoWorkshirtKpMabaSize) ? (currentJaslabPrice + currentWorkshirtKpPrice + gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice - BUNDLE_DISCOUNT_AMOUNT) : 0;
+        const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabStrikethroughPrice : jaslabProduct.strikethroughPrice || jaslabProduct.price) + 
+                                     (promoWorkshirtKpMabaSize ? currentWorkshirtKpStrikethroughPrice : workshirtKpProduct.strikethroughPrice || workshirtKpProduct.price) + 
+                                     gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
         
-        const savings = totalNormalBundlePrice - discountedBundlePrice;
+        const calculatedBundlePrice = (promoJaslabMabaSize ? currentJaslabPrice : jaslabProduct.price) + 
+                                      (promoWorkshirtKpMabaSize ? currentWorkshirtKpPrice : workshirtKpProduct.price) + 
+                                      gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
 
-        dom.bundleMabaNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
-        dom.bundleMabaDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+        const finalDiscountedBundlePrice = calculatedBundlePrice - BUNDLE_DISCOUNT_AMOUNT;
+        
+        const savings = totalNormalBundlePrice - finalDiscountedBundlePrice;
+
+        dom.bundleMabaNormalPrice.innerHTML = formatCurrency(totalNormalBundlePrice);
+        dom.bundleMabaDiscountedPrice.textContent = formatCurrency(finalDiscountedBundlePrice);
 
         // Enable/disable add to cart button based on size selections
         if (promoJaslabMabaSize && promoWorkshirtKpMabaSize) {
@@ -1503,20 +1533,26 @@
             currentJaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id); // Pass productId
             currentJaslabStrikethroughPrice = calculatePrice(jaslabProduct.strikethroughPrice || jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id);
             dom.bundleAnakMetalJaslabPrice.textContent = formatCurrency(currentJaslabPrice);
+            dom.bundleAnakMetalJaslabStrikethroughPrice.textContent = formatCurrency(currentJaslabStrikethroughPrice);
+            dom.bundleAnakMetalJaslabStrikethroughPrice.style.display = 'inline';
         } else {
             dom.bundleAnakMetalJaslabPrice.textContent = 'Pilih Ukuran';
+            dom.bundleAnakMetalJaslabStrikethroughPrice.style.display = 'none';
         }
 
         const topiImmtPrice = topiImmtProduct.price;
         const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
 
         // Calculate total normal price using strikethrough prices if they exist, otherwise original price
-        const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabStrikethroughPrice : 0) + topiImmtPrice + keychainImmtPrice;
-        const discountedBundlePrice = promoJaslabAnakMetalSize ? (currentJaslabPrice + topiImmtPrice + keychainImmtPrice - BUNDLE_DISCOUNT_AMOUNT) : 0;
-        const savings = totalNormalBundlePrice - discountedBundlePrice;
+        const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabStrikethroughPrice : jaslabProduct.strikethroughPrice || jaslabProduct.price) + topiImmtPrice + keychainImmtPrice;
+        
+        const calculatedBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabPrice : jaslabProduct.price) + topiImmtPrice + keychainImmtPrice;
+        const finalDiscountedBundlePrice = calculatedBundlePrice - BUNDLE_DISCOUNT_AMOUNT;
 
-        dom.bundleAnakMetalNormalPrice.textContent = formatCurrency(totalNormalBundlePrice);
-        dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(discountedBundlePrice);
+        const savings = totalNormalBundlePrice - finalDiscountedBundlePrice;
+
+        dom.bundleAnakMetalNormalPrice.innerHTML = formatCurrency(totalNormalBundlePrice);
+        dom.bundleAnakMetalDiscountedPrice.textContent = formatCurrency(finalDiscountedBundlePrice);
 
         // Enable/disable add to cart button based on size selections
         if (promoJaslabAnakMetalSize) {
