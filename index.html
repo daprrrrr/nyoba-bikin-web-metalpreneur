@@ -1491,18 +1491,18 @@
         }
 
         const gamtekPrice = gamtekProduct.price;
-        const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+        const keychainImmtPrice = keychainImmtProduct.price; // Individual price
         const keychainMakaraPrice = keychainMakaraProduct.price;
-        const stickerMobilPrice = stickerMobilProduct.price * 2; // Both stickers
+        const stickerMobilPrice = stickerMobilProduct.price; // Individual price
 
         // Calculate total normal price using strikethrough prices if they exist, otherwise original price
         const totalNormalBundlePrice = (promoJaslabMabaSize ? currentJaslabStrikethroughPrice : jaslabProduct.strikethroughPrice || jaslabProduct.price) + 
                                      (promoWorkshirtKpMabaSize ? currentWorkshirtKpStrikethroughPrice : workshirtKpProduct.strikethroughPrice || workshirtKpProduct.price) + 
-                                     gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
+                                     gamtekPrice + (keychainImmtPrice * 2) + keychainMakaraPrice + (stickerMobilPrice * 2);
         
         const calculatedBundlePrice = (promoJaslabMabaSize ? currentJaslabPrice : jaslabProduct.price) + 
                                       (promoWorkshirtKpMabaSize ? currentWorkshirtKpPrice : workshirtKpProduct.price) + 
-                                      gamtekPrice + keychainImmtPrice + keychainMakaraPrice + stickerMobilPrice;
+                                      gamtekPrice + (keychainImmtPrice * 2) + keychainMakaraPrice + (stickerMobilPrice * 2);
 
         const finalDiscountedBundlePrice = calculatedBundlePrice - BUNDLE_DISCOUNT_AMOUNT;
         
@@ -1541,12 +1541,12 @@
         }
 
         const topiImmtPrice = topiImmtProduct.price;
-        const keychainImmtPrice = keychainImmtProduct.price * 2; // Both keychains
+        const keychainImmtPrice = keychainImmtProduct.price; // Individual price
 
         // Calculate total normal price using strikethrough prices if they exist, otherwise original price
-        const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabStrikethroughPrice : jaslabProduct.strikethroughPrice || jaslabProduct.price) + topiImmtPrice + keychainImmtPrice;
+        const totalNormalBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabStrikethroughPrice : jaslabProduct.strikethroughPrice || jaslabProduct.price) + topiImmtPrice + (keychainImmtPrice * 2);
         
-        const calculatedBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabPrice : jaslabProduct.price) + topiImmtPrice + keychainImmtPrice;
+        const calculatedBundlePrice = (promoJaslabAnakMetalSize ? currentJaslabPrice : jaslabProduct.price) + topiImmtPrice + (keychainImmtPrice * 2);
         const finalDiscountedBundlePrice = calculatedBundlePrice - BUNDLE_DISCOUNT_AMOUNT;
 
         const savings = totalNormalBundlePrice - finalDiscountedBundlePrice;
@@ -1614,17 +1614,33 @@
 
       cart.forEach(item => {
           if (item.isBundle) {
+              // Display the bundle name and its final discounted price
               orderItemsHtml += `
-                  <div class="mt-4 mb-2 text-md font-bold text-gray-800">${item.name}</div>
+                  <div class="mt-4 mb-2 text-md font-bold text-gray-800">${item.name} (${formatCurrency(item.finalPrice)})</div>
                   <ul class="ml-4 list-disc list-inside text-sm text-gray-700">
               `;
+              // Iterate through bundle details for breakdown, showing individual item prices (including strikethrough if applicable)
               item.bundleDetails.forEach(detail => {
+                  const detailProduct = allProducts.find(p => p.id === detail.id);
+                  const detailDisplayPrice = detail.price; // This is the price of the item *within* the bundle
+                  let detailStrikethroughPriceHtml = '';
+
+                  // Check if the individual item itself has a strikethrough price property
+                  if (detailProduct && detailProduct.strikethroughPrice) {
+                      // Apply size increment to the strikethrough price as well, if applicable
+                      const calculatedStrikethroughPrice = calculatePrice(detailProduct.strikethroughPrice, detail.size, detail.id);
+                      detailStrikethroughPriceHtml = `<s class="text-red-500">${formatCurrency(calculatedStrikethroughPrice)}</s> `;
+                  }
+                  
                   orderItemsHtml += `
-                      <li>${detail.name} ${detail.size ? `(${detail.size})` : ''}${detail.option ? ` - ${detail.option}` : ''} x ${detail.quantity} (${formatCurrency(detail.price * detail.quantity)})</li>
+                      <li>${detail.name} ${detail.size ? `(${detail.size})` : ''}${detail.option ? ` - ${detail.option}` : ''} x ${detail.quantity} 
+                          (${detailStrikethroughPriceHtml}${formatCurrency(detailDisplayPrice * detail.quantity)})
+                      </li>
                   `;
-                  totalOrderAmount += detail.price * detail.quantity; // Sum individual prices for total
               });
               orderItemsHtml += `</ul>`;
+              // THIS IS THE KEY FIX: Add the bundle's final discounted price to the total, only once per bundle
+              totalOrderAmount += item.finalPrice;
           } else {
               orderItemsHtml += `
                   <div class="flex justify-between text-sm">
@@ -1632,13 +1648,10 @@
                       <span>${formatCurrency(item.finalPrice * item.quantity)}</span>
                   </div>
               `;
-              totalOrderAmount += item.finalPrice * item.quantity; // Sum individual product prices
+              totalOrderAmount += item.finalPrice * item.quantity;
           }
       });
       dom.orderSummaryItems.innerHTML = orderItemsHtml;
-      
-      // Re-calculate total based on individual items from bundleDetails for payment summary
-      // This ensures the displayed total matches the sum of the detailed items
       dom.orderSummaryTotal.textContent = formatCurrency(totalOrderAmount);
 
       dom.customerDataSummary.innerHTML = "";
@@ -1730,16 +1743,15 @@
             let totalAmountForFirestore = 0;
             cart.forEach(item => {
                 if (item.isBundle) {
-                    item.bundleDetails.forEach(detail => {
-                        flattenedCart.push({
-                            name: detail.name,
-                            size: detail.size || "N/A",
-                            option: detail.option || "N/A",
-                            quantity: detail.quantity,
-                            price: detail.price, // Use the price from bundleDetails (already includes Jaslab's discount if applicable)
-                        });
-                        totalAmountForFirestore += detail.price * detail.quantity;
+                    // For bundle, we store its final price and a breakdown for record-keeping
+                    flattenedCart.push({
+                        name: item.name,
+                        quantity: item.quantity, // Should always be 1 for a bundle
+                        finalPrice: item.finalPrice, // The actual price of the bundle as a unit
+                        isBundle: true,
+                        bundleDetails: item.bundleDetails // Store the detailed breakdown for reference
                     });
+                    totalAmountForFirestore += item.finalPrice * item.quantity; // Use bundle's final price
                 } else {
                     flattenedCart.push({
                         name: item.name,
@@ -2111,9 +2123,10 @@
             const jaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabMabaSize, jaslabProduct.id);
             const workshirtKpPrice = calculatePrice(workshirtKpProduct.price, promoWorkshirtKpMabaSize, workshirtKpProduct.id);
             const gamtekPrice = gamtekProduct.price;
-            const keychainImmtPrice = keychainImmtProduct.price;
+            const keychainImmtPrice = keychainImmtProduct.price; // Individual price
             const keychainMakaraPrice = keychainMakaraProduct.price;
-            const stickerMobilPrice = stickerMobilProduct.price;
+            const stickerMobilPrice = stickerMobilProduct.price; // Individual price
+
 
             const bundleDetails = [
                 { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabMabaSize, option: null, quantity: 1, price: jaslabPrice },
@@ -2162,7 +2175,7 @@
             // Calculate individual item prices for bundleDetails
             const jaslabPrice = calculatePrice(jaslabProduct.price, promoJaslabAnakMetalSize, jaslabProduct.id);
             const topiImmtPrice = topiImmtProduct.price;
-            const keychainImmtPrice = keychainImmtProduct.price;
+            const keychainImmtPrice = keychainImmtProduct.price; // Individual price
 
             const bundleDetails = [
                 { id: jaslabProduct.id, name: jaslabProduct.name, size: promoJaslabAnakMetalSize, option: null, quantity: 1, price: jaslabPrice },
