@@ -107,8 +107,10 @@
                     <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" name="Email" required="" type="email"/>
                 </label>
                 <label class="block" id="bordir-name-container" style="display: none;">
-                    <span class="text-sm font-medium text-gray-700">Nama untuk Bordir (Maks. 15 huruf, 2 kata)*</span>
-                    <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" name="Nama untuk Bordir" type="text" maxlength="15" />
+                    <!-- PERUBAHAN: Teks label diperbarui -->
+                    <span class="text-sm font-medium text-gray-700">Nama untuk Bordir (Maks. 15 huruf (tanpa spasi), 2 kata)*</span>
+                    <!-- PERUBAHAN: Atribut maxlength dihapus -->
+                    <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" name="Nama untuk Bordir" type="text" />
                 </label>
                 <label class="block">
                     <span class="text-sm font-medium text-gray-700">ID Line / No. Whatsapp*</span>
@@ -239,15 +241,37 @@
                 bordirNameInput.removeAttribute('required');
             }
 
-            // Validate bordir name input for max 2 words and max 15 characters
+            // PERUBAHAN: Validasi input nama bordir secara real-time
             bordirNameInput.addEventListener('input', () => {
-                const value = bordirNameInput.value;
-                const words = value.trim().split(/\s+/);
-                if (words.length > 2) {
-                    // If more than 2 words, truncate to first 2 words
-                    bordirNameInput.value = words.slice(0, 2).join(' ');
+                let value = bordirNameInput.value;
+
+                // Batasi jika jumlah karakter (tanpa spasi) melebihi 15
+                if (value.replace(/\s/g, '').length > 15) {
+                    let truncatedValue = '';
+                    let nonSpaceCount = 0;
+                    for (const char of value) {
+                        if (char !== ' ') {
+                            nonSpaceCount++;
+                        }
+                        if (nonSpaceCount <= 15) {
+                            truncatedValue += char;
+                        } else {
+                            break; // Hentikan penambahan karakter jika batas tercapai
+                        }
+                    }
+                    value = truncatedValue;
                 }
-                // Max length is already handled by maxlength attribute
+
+                // Kemudian, batasi jika jumlah kata melebihi 2
+                const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+                if (words.length > 2) {
+                    value = words.slice(0, 2).join(' ');
+                }
+
+                // Perbarui nilai input hanya jika ada perubahan untuk mencegah kursor melompat
+                if (bordirNameInput.value !== value) {
+                    bordirNameInput.value = value;
+                }
             });
 
 
@@ -257,15 +281,20 @@
                 // Re-validate bordir name before submission
                 if (hasBordirItemsInCart()) {
                     const bordirName = bordirNameInput.value.trim();
-                    const words = bordirName.split(/\s+/);
-                    if (bordirName === '' || words.length > 2 || bordirName.length > 15) {
-                        // Using a custom alert instead of native alert()
+                    // PERUBAHAN: Menghitung karakter tanpa spasi
+                    const charCountWithoutSpaces = bordirName.replace(/\s/g, '').length;
+                    // PERUBAHAN: Memastikan penghitungan kata yang benar (mengabaikan spasi ganda)
+                    const words = bordirName.split(/\s+/).filter(word => word.length > 0);
+
+                    // PERUBAHAN: Kondisi validasi diperbarui untuk memeriksa jumlah karakter tanpa spasi
+                    if (bordirName === '' || words.length > 2 || charCountWithoutSpaces > 15) {
                         const alertModal = document.createElement('div');
                         alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
                         alertModal.innerHTML = `
                             <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm text-center p-8">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">Peringatan</h3>
-                                <p class="text-gray-600 mb-6">Nama untuk bordir harus diisi, maksimal 15 huruf dan 2 kata.</p>
+                                <!-- PERUBAHAN: Pesan peringatan diperbarui -->
+                                <p class="text-gray-600 mb-6">Nama untuk bordir harus diisi, maksimal 15 huruf (tidak termasuk spasi) dan 2 kata.</p>
                                 <button class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700" id="close-alert-btn">OK</button>
                             </div>
                         `;
