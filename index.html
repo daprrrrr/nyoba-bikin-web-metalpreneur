@@ -462,11 +462,6 @@
                 <p class="text-gray-600 mb-6">
                     Paket lengkap untuk mahasiswa Metalurgi! Dapatkan semua merchandise dan perlengkapan akademis dalam satu bundle.
                 </p>
-                <!-- Jaslab Size Selection -->
-                <div class="mb-4">
-                    <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab:</p>
-                    <div id="bundle-final-suit-jaslab-size-options" class="flex flex-wrap gap-3 mb-2"></div>
-                </div>
                 <!-- Workshirt KP Size Selection -->
                 <div class="mb-4">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt Kerja Praktik:</p>
@@ -570,11 +565,6 @@
                 <p class="text-gray-600 mb-6">
                     Persiapkan diri Anda untuk dunia akademis dengan perlengkapan dasar yang wajib dimiliki!
                 </p>
-                <!-- Jaslab Size Selection -->
-                <div class="mb-4">
-                    <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Jaslab:</p>
-                    <div id="bundle-borderland-jaslab-size-options" class="flex flex-wrap gap-3 mb-2"></div>
-                </div>
                 <!-- Workshirt KP Size Selection -->
                 <div class="mb-4">
                     <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt Kerja Praktik:</p>
@@ -848,21 +838,6 @@
 
     const allProducts = [
       {
-        id: 1,
-        name: "Jas laboratorium",
-        price: 145000, 
-        strikethroughPrice: 160000, 
-        description: "Jas Laboratorium berkualitas tinggi, dengan berbasis bahan american drill yang ketika dipakai akan terasa nyaman dan tidak panas. Wajib bagi setiap mahasiswa Metalurgi pada saat praktikum. Dilengkapi dengan bordir nama pada sisi kanan dan logo IMMt pada sisi kiri dada.",
-        image: "assets/jaslab-1.jpg",
-        hasSizes: true,
-        sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"], 
-        detailImages: [
-          "assets/jaslab-1.jpg",
-          "assets/jaslab-2.jpg",
-          "assets/size-chart-a.JPG",
-        ],
-      },
-      {
         id: 2,
         name: "Workshirt Kerja Praktik",
         price: 165000, 
@@ -970,14 +945,13 @@
           "assets/topi-immt-2.jpg",
         ],
       },
-      // [REVISI] detailImages for bundles updated to include only base images. Size charts are added dynamically.
+      // [REVISI] Bundles updated to remove Jaslab
       {
           id: 10,
           name: "The Final Suit ♠♥♣♦",
           image: "assets/final-suit-bundle.jpg", 
           isBundle: true,
           bundleItems: [
-              { id: 1, quantity: 1, type: 'jaslab', selectedSize: null }, 
               { id: 2, quantity: 1, type: 'workshirt-kp', selectedSize: null }, 
               { id: 3, quantity: 1, type: 'workshirt-metal', selectedSize: null }, 
               { id: 4, quantity: 1, type: 'sticker-pack' }, 
@@ -989,7 +963,7 @@
           ],
           description: "Paket lengkap untuk mahasiswa Metalurgi! Dapatkan semua merchandise dan perlengkapan akademis dalam satu bundle.",
           detailImages: [
-              "assets/jaslab-1.jpg", "assets/workshirt-kp-1.jpg", "assets/workshirt-metal-1.jpg", "assets/sticker-pack-1.jpg", "assets/sticker-mobil-1.jpg", "assets/keychain-immt-1.jpg", "assets/keychain-makara-1.jpg", "assets/gamtek-1.jpg", "assets/topi-immt-1.jpg"
+              "assets/workshirt-kp-1.jpg", "assets/workshirt-metal-1.jpg", "assets/sticker-pack-1.jpg", "assets/sticker-mobil-1.jpg", "assets/keychain-immt-1.jpg", "assets/keychain-makara-1.jpg", "assets/gamtek-1.jpg", "assets/topi-immt-1.jpg"
           ]
       },
       {
@@ -1016,13 +990,12 @@
           image: "assets/borderland-bundle.jpg", 
           isBundle: true,
           bundleItems: [
-              { id: 1, quantity: 1, type: 'jaslab', selectedSize: null }, 
               { id: 2, quantity: 1, type: 'workshirt-kp', selectedSize: null }, 
               { id: 8, quantity: 1, type: 'gamtek' } 
           ],
           description: "Persiapkan diri Anda untuk dunia akademis dengan perlengkapan dasar yang wajib dimiliki!",
           detailImages: [
-              "assets/jaslab-1.jpg", "assets/workshirt-kp-1.jpg", "assets/gamtek-1.jpg"
+              "assets/workshirt-kp-1.jpg", "assets/gamtek-1.jpg"
           ]
       },
       {
@@ -1055,13 +1028,13 @@
 
     // Variables for new bundle size/option selections
     let bundleFinalSuitSelections = {
-        jaslabSize: null, wsKpSize: null, wsMetalSize: null, keychainOption: null, stickerOption: null
+        wsKpSize: null, wsMetalSize: null, keychainOption: null, stickerOption: null
     };
     let bundleFaceCardSelections = {
         wsMetalSize: null, keychainOption: null, stickerOption: null
     };
     let bundleBorderlandSelections = {
-        jaslabSize: null, wsKpSize: null
+        wsKpSize: null
     };
     let bundleMerchEssentialsSelections = {
         keychainOption: null
@@ -1099,7 +1072,6 @@
       productOverviewGrid: document.querySelector("#product-overview-modal .product-overview-grid"),
       mainPromoCardsContainer: document.getElementById("main-promo-cards-container"),
       bundleFinalSuitModal: document.getElementById("bundle-final-suit-modal"),
-      bundleFinalSuitJaslabSizeOptions: document.getElementById("bundle-final-suit-jaslab-size-options"),
       bundleFinalSuitWsKpSizeOptions: document.getElementById("bundle-final-suit-wskp-size-options"),
       bundleFinalSuitWsMetalSizeOptions: document.getElementById("bundle-final-suit-wsmetal-size-options"),
       bundleFinalSuitKeychainOptions: document.getElementById("bundle-final-suit-keychain-options"),
@@ -1117,7 +1089,6 @@
       bundleFaceCardDiscountedPrice: document.getElementById("bundle-face-card-discounted-price"),
       bundleFaceCardSavingsMessage: document.getElementById("bundle-face-card-savings-message"),
       bundleBorderlandModal: document.getElementById("bundle-borderland-modal"),
-      bundleBorderlandJaslabSizeOptions: document.getElementById("bundle-borderland-jaslab-size-options"),
       bundleBorderlandWsKpSizeOptions: document.getElementById("bundle-borderland-wskp-size-options"),
       addBundleBorderlandToCartBtn: document.getElementById("add-bundle-borderland-to-cart-btn"),
       bundleBorderlandNormalPrice: document.getElementById("bundle-borderland-normal-price"),
@@ -1426,8 +1397,7 @@
             let currentItemStrikethroughPrice = product.strikethroughPrice || product.price;
             let itemSelectedOption = null, itemSelectedSize = null;
             if (product.hasSizes) {
-                if (item.type === 'jaslab') itemSelectedSize = bundleFinalSuitSelections.jaslabSize;
-                else if (item.type === 'workshirt-kp') itemSelectedSize = bundleFinalSuitSelections.wsKpSize;
+                if (item.type === 'workshirt-kp') itemSelectedSize = bundleFinalSuitSelections.wsKpSize;
                 else if (item.type === 'workshirt-metal') itemSelectedSize = bundleFinalSuitSelections.wsMetalSize;
                 if (!itemSelectedSize) allSelectionsMade = false;
                 else {
@@ -1514,8 +1484,7 @@
             let currentItemStrikethroughPrice = product.strikethroughPrice || product.price;
             let itemSelectedSize = null;
             if (product.hasSizes) {
-                if (item.type === 'jaslab') itemSelectedSize = bundleBorderlandSelections.jaslabSize;
-                else if (item.type === 'workshirt-kp') itemSelectedSize = bundleBorderlandSelections.wsKpSize;
+                if (item.type === 'workshirt-kp') itemSelectedSize = bundleBorderlandSelections.wsKpSize;
                 if (!itemSelectedSize) allSelectionsMade = false;
                 else {
                     currentItemPrice = calculatePrice(product.price, itemSelectedSize, product.id);
@@ -1700,7 +1669,6 @@
         }
 
         // Bundle Selections
-        if (e.target.matches('#bundle-final-suit-jaslab-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFinalSuitSelections.jaslabSize = e.target.dataset.size; updateBundleFinalSuitPrices(); return; }
         if (e.target.matches('#bundle-final-suit-wskp-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFinalSuitSelections.wsKpSize = e.target.dataset.size; updateBundleFinalSuitPrices(); return; }
         if (e.target.matches('#bundle-final-suit-wsmetal-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFinalSuitSelections.wsMetalSize = e.target.dataset.size; updateBundleFinalSuitPrices(); return; }
         if (e.target.matches('#bundle-final-suit-keychain-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFinalSuitSelections.keychainOption = e.target.dataset.option; updateBundleFinalSuitPrices(); return; }
@@ -1708,7 +1676,6 @@
         if (e.target.matches('#bundle-face-card-wsmetal-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.wsMetalSize = e.target.dataset.size; updateBundleFaceCardPrices(); return; }
         if (e.target.matches('#bundle-face-card-keychain-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.keychainOption = e.target.dataset.option; updateBundleFaceCardPrices(); return; }
         if (e.target.matches('#bundle-face-card-sticker-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.stickerOption = e.target.dataset.option; updateBundleFaceCardPrices(); return; }
-        if (e.target.matches('#bundle-borderland-jaslab-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleBorderlandSelections.jaslabSize = e.target.dataset.size; updateBundleBorderlandPrices(); return; }
         if (e.target.matches('#bundle-borderland-wskp-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleBorderlandSelections.wsKpSize = e.target.dataset.size; updateBundleBorderlandPrices(); return; }
         if (e.target.matches('#bundle-merch-essentials-keychain-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleMerchEssentialsSelections.keychainOption = e.target.dataset.option; updateBundleMerchEssentialsPrices(); return; }
 
@@ -1737,7 +1704,6 @@
             // [REVISI BARU] Logic to populate slideshow with product images followed immediately by their size charts
             let imagesForSlideshow = [];
             const sizeChartMap = {
-                1: 'assets/size-chart-a.JPG', // Jaslab
                 2: 'assets/size-chart-b.JPG', // Workshirt KP
                 3: 'assets/size-chart-c.JPG'  // Workshirt Metalurgi
             };
@@ -1757,13 +1723,11 @@
             let targetModal;
             if (promoId === 10) { 
                 targetModal = dom.bundleFinalSuitModal;
-                bundleFinalSuitSelections = { jaslabSize: null, wsKpSize: null, wsMetalSize: null, keychainOption: null, stickerOption: null };
-                const jaslabProduct = allProducts.find(p => p.id === 1);
+                bundleFinalSuitSelections = { wsKpSize: null, wsMetalSize: null, keychainOption: null, stickerOption: null };
                 const wsKpProduct = allProducts.find(p => p.id === 2);
                 const wsMetalProduct = allProducts.find(p => p.id === 3);
                 const keychainProduct = allProducts.find(p => p.id === 6);
                 const stickerProduct = allProducts.find(p => p.id === 5);
-                dom.bundleFinalSuitJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
                 dom.bundleFinalSuitWsKpSizeOptions.innerHTML = wsKpProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
                 dom.bundleFinalSuitWsMetalSizeOptions.innerHTML = wsMetalProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
                 dom.bundleFinalSuitKeychainOptions.innerHTML = keychainProduct.options.map(option => `<button class="option-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-option="${option}">${option}</button>`).join("");
@@ -1781,10 +1745,8 @@
                 updateBundleFaceCardPrices(); 
             } else if (promoId === 12) { 
                 targetModal = dom.bundleBorderlandModal;
-                bundleBorderlandSelections = { jaslabSize: null, wsKpSize: null };
-                const jaslabProduct = allProducts.find(p => p.id === 1);
+                bundleBorderlandSelections = { wsKpSize: null };
                 const wsKpProduct = allProducts.find(p => p.id === 2);
-                dom.bundleBorderlandJaslabSizeOptions.innerHTML = jaslabProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
                 dom.bundleBorderlandWsKpSizeOptions.innerHTML = wsKpProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
                 updateBundleBorderlandPrices(); 
             } else if (promoId === 13) { 
