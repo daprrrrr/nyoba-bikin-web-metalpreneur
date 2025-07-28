@@ -201,6 +201,12 @@
             // All products data (needed for price calculation and bundle details)
             const allProducts = [
                 {
+                    id: 1, name: "Jas laboratorium", price: 145000, strikethroughPrice: 160000,
+                    description: "Jas Laboratorium berkualitas tinggi, dengan berbasis bahan american drill yang ketika dipakai akan terasa nyaman dan tidak panas. Wajib bagi setiap mahasiswa Metalurgi pada saat praktikum. Dilengkapi dengan bordir nama pada sisi kanan dan logo IMMt pada sisi kiri dada.",
+                    image: "assets/jaslab-1.jpg", hasSizes: true, sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL"],
+                    detailImages: ["assets/jaslab-1.jpg", "assets/jaslab-2.jpg", "assets/size-chart-a.jpg"], inBundle: true,
+                },
+                {
                     id: 2, name: "Workshirt Kerja Praktik", price: 165000, strikethroughPrice: 175000,
                     description: "Workshirt nyaman dan stylish untuk kegiatan kerja praktik Anda. Bahan kuat dan tahan lama yang siap dipakai kerja praktik anda.",
                     image: "assets/workshirt-kp-1.jpg", hasSizes: true, sizes: ["S", "M", "L", "XL", "XXL", "3XL", "4XL"],
@@ -279,8 +285,8 @@
                 let price = basePrice;
                 const sizeIncrements = { "S": 0, "M": 0, "L": 0, "XL": 1, "XXL": 2, "3XL": 3, "4XL": 4, "5XL": 5 };
                 let incrementAmount = 0;
-                // DIHAPUS: Logika harga untuk Jaslab
-                if (productId === 2) { incrementAmount = 5000; }
+                if (productId === 1) { incrementAmount = 10000; }
+                else if (productId === 2) { incrementAmount = 5000; }
                 else if (productId === 3) { incrementAmount = 10000; }
                 const sizeIndex = sizeIncrements[size];
                 if (productId === 3) { if (sizeIndex >= 2) { price = basePrice + ((sizeIndex - 1) * incrementAmount); } }

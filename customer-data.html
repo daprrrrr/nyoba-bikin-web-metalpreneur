@@ -216,8 +216,7 @@
             const cart = JSON.parse(sessionStorage.getItem('cart')) || [];
 
             const hasBordirItemsInCart = () => {
-                // DIHAPUS: Logika untuk menampilkan input bordir karena produknya sudah dihapus
-                const bordirProductIds = []; // Product IDs that require embroidery
+                const bordirProductIds = [1, 2, 3]; // Product IDs that require embroidery
                 for (const item of cart) {
                     if (item.isBundle) {
                         // Check if any item in the bundle details requires embroidery
