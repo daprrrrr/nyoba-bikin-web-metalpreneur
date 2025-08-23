@@ -547,45 +547,6 @@
     </div>
   </div>
 
-  <!-- New Bundle Promo Modal - Borderland Basic Kit -->
-  <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="bundle-borderland-modal">
-    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl h-full flex flex-col md:flex-row bundle-modal-content">
-        <div class="w-full md:w-1/2 p-4 flex flex-col items-center justify-center bg-gray-50 rounded-lg">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Apa yang Anda Dapatkan:</h3>
-            <div class="bundle-slideshow-container">
-                <div class="bundle-slides"></div>
-                <a class="bundle-slide-prev">&#10094;</a>
-                <a class="bundle-slide-next">&#10095;</a>
-            </div>
-            <div class="bundle-dots-container"></div>
-        </div>
-        <div class="w-full md:w-1/2 p-6 flex flex-col justify-between">
-            <div>
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Borderland Basic Kit Bundle</h2>
-                <p class="text-gray-600 mb-6">
-                    Persiapkan diri Anda untuk dunia akademis dengan perlengkapan dasar yang wajib dimiliki!
-                </p>
-                <!-- Workshirt KP Size Selection -->
-                <div class="mb-4">
-                    <p class="font-semibold text-gray-800 mb-2">Pilih Ukuran Workshirt Kerja Praktik:</p>
-                    <div id="bundle-borderland-wskp-size-options" class="flex flex-wrap gap-3 mb-2"></div>
-                </div>
-            </div>
-            <div class="mt-auto pt-4 border-t">
-                <p class="text-lg text-gray-600">Harga Normal: <s id="bundle-borderland-normal-price" class="text-red-500">Rp 0</s></p>
-                <p class="text-2xl font-bold text-green-600">Harga Bundle: <span id="bundle-borderland-discounted-price">Rp 0</span></p>
-                <p class="text-sm text-green-700 mt-1" id="bundle-borderland-savings-message">Pilih ukuran untuk melihat penghematan!</p>
-                <button id="add-bundle-borderland-to-cart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 mt-4" disabled>
-                    Tambahkan Bundle ke Keranjang
-                </button>
-            </div>
-        </div>
-        <button class="close-modal-btn absolute top-4 right-4 p-1 rounded-full bg-gray-100 hover:bg-gray-200" data-modal-id="bundle-borderland-modal">
-            <i class="w-6 h-6" data-lucide="x"></i>
-        </button>
-    </div>
-  </div>
-
   <!-- New Bundle Promo Modal - Ground Entry Bundle -->
   <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" id="bundle-merch-essentials-modal">
     <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl h-full flex flex-col md:flex-row bundle-modal-content">
@@ -921,17 +882,6 @@
           "assets/keychain-makara-2.jpg",
         ],
       },
-      {
-        id: 8,
-        name: "Paket Alat Gamtek",
-        price: 250000, 
-        description: "Paket lengkap alat gambar teknik untuk menunjang kebutuhan perkuliahan Anda ketika menghadapi mata kuliah gambar teknik!<br>Paket Gamtek Berisikan :<br>1. Tabung Gamtek 64 CM<br>2. Penggaris<br>3. Penggaris MOR<br>4. Penghapus<br>5. Mal Huruf 3 & 6 mm<br>6. Mal lingkaran<br>7. Pensil Mekanik 0.5 & 0.7<br> 8. Isi Pensil 0.5 & 0.7<br> 9. Jangka<br>10. Buku Gambar A3<br> 11. Buku MM Block",
-        image: "assets/gamtek-1.jpg",
-        hasSizes: false,
-        detailImages: [
-          "assets/gamtek-1.jpg", "assets/gamtek-2.jpg", "assets/gamtek-3.jpg", "assets/gamtek-4.jpg", "assets/gamtek-5.jpg", "assets/gamtek-6.jpg", "assets/gamtek-7.jpg", "assets/gamtek-8.jpg", "assets/gamtek-9.jpg", "assets/gamtek-10.jpg", "assets/gamtek-11.jpg", "assets/gamtek-12.jpg",
-        ],
-      },
       { 
         id: 9,
         name: "Topi Metalurgi",
@@ -945,7 +895,7 @@
           "assets/topi-immt-2.jpg",
         ],
       },
-      // [REVISI] Bundles updated to remove Jaslab
+      // [REVISI] Bundles updated to remove Jaslab & Gamtek
       {
           id: 10,
           name: "The Final Suit ♠♥♣♦",
@@ -958,12 +908,11 @@
               { id: 5, quantity: 1, type: 'sticker-mobil', selectable: true, selectedOption: null }, 
               { id: 6, quantity: 1, type: 'keychain-immt', selectable: true, selectedOption: null }, 
               { id: 7, quantity: 1, type: 'keychain-makara' }, 
-              { id: 8, quantity: 1, type: 'gamtek' }, 
               { id: 9, quantity: 1, type: 'topi' } 
           ],
           description: "Paket lengkap untuk mahasiswa Metalurgi! Dapatkan semua merchandise dan perlengkapan akademis dalam satu bundle.",
           detailImages: [
-              "assets/workshirt-kp-1.jpg", "assets/workshirt-metal-1.jpg", "assets/sticker-pack-1.jpg", "assets/sticker-mobil-1.jpg", "assets/keychain-immt-1.jpg", "assets/keychain-makara-1.jpg", "assets/gamtek-1.jpg", "assets/topi-immt-1.jpg"
+              "assets/workshirt-kp-1.jpg", "assets/workshirt-metal-1.jpg", "assets/sticker-pack-1.jpg", "assets/sticker-mobil-1.jpg", "assets/keychain-immt-1.jpg", "assets/keychain-makara-1.jpg", "assets/topi-immt-1.jpg"
           ]
       },
       {
@@ -982,20 +931,6 @@
           description: "Tunjukkan identitas Anda dengan bundle merchandise eksklusif ini!",
           detailImages: [
               "assets/workshirt-metal-1.jpg", "assets/sticker-pack-1.jpg", "assets/sticker-mobil-1.jpg", "assets/keychain-immt-1.jpg", "assets/keychain-makara-1.jpg", "assets/topi-immt-1.jpg"
-          ]
-      },
-      {
-          id: 12,
-          name: "Borderland Basic Kit Bundle",
-          image: "assets/borderland-bundle.jpg", 
-          isBundle: true,
-          bundleItems: [
-              { id: 2, quantity: 1, type: 'workshirt-kp', selectedSize: null }, 
-              { id: 8, quantity: 1, type: 'gamtek' } 
-          ],
-          description: "Persiapkan diri Anda untuk dunia akademis dengan perlengkapan dasar yang wajib dimiliki!",
-          detailImages: [
-              "assets/workshirt-kp-1.jpg", "assets/gamtek-1.jpg"
           ]
       },
       {
@@ -1032,9 +967,6 @@
     };
     let bundleFaceCardSelections = {
         wsMetalSize: null, keychainOption: null, stickerOption: null
-    };
-    let bundleBorderlandSelections = {
-        wsKpSize: null
     };
     let bundleMerchEssentialsSelections = {
         keychainOption: null
@@ -1088,12 +1020,6 @@
       bundleFaceCardNormalPrice: document.getElementById("bundle-face-card-normal-price"),
       bundleFaceCardDiscountedPrice: document.getElementById("bundle-face-card-discounted-price"),
       bundleFaceCardSavingsMessage: document.getElementById("bundle-face-card-savings-message"),
-      bundleBorderlandModal: document.getElementById("bundle-borderland-modal"),
-      bundleBorderlandWsKpSizeOptions: document.getElementById("bundle-borderland-wskp-size-options"),
-      addBundleBorderlandToCartBtn: document.getElementById("add-bundle-borderland-to-cart-btn"),
-      bundleBorderlandNormalPrice: document.getElementById("bundle-borderland-normal-price"),
-      bundleBorderlandDiscountedPrice: document.getElementById("bundle-borderland-discounted-price"),
-      bundleBorderlandSavingsMessage: document.getElementById("bundle-borderland-savings-message"),
       bundleMerchEssentialsModal: document.getElementById("bundle-merch-essentials-modal"),
       bundleMerchEssentialsKeychainOptions: document.getElementById("bundle-merch-essentials-keychain-options"),
       addBundleMerchEssentialsToCartBtn: document.getElementById("add-bundle-merch-essentials-to-cart-btn"),
@@ -1474,44 +1400,6 @@
         }
     };
 
-    const updateBundleBorderlandPrices = () => {
-        const bundle = allProducts.find(b => b.id === 12);
-        let totalNormalPrice = 0, totalCurrentPrice = 0, allSelectionsMade = true;
-        const bundleDetails = [];
-        bundle.bundleItems.forEach(item => {
-            const product = allProducts.find(p => p.id === item.id);
-            let currentItemPrice = product.price;
-            let currentItemStrikethroughPrice = product.strikethroughPrice || product.price;
-            let itemSelectedSize = null;
-            if (product.hasSizes) {
-                if (item.type === 'workshirt-kp') itemSelectedSize = bundleBorderlandSelections.wsKpSize;
-                if (!itemSelectedSize) allSelectionsMade = false;
-                else {
-                    currentItemPrice = calculatePrice(product.price, itemSelectedSize, product.id);
-                    currentItemStrikethroughPrice = calculatePrice(product.strikethroughPrice || product.price, itemSelectedSize, product.id);
-                }
-            }
-            totalCurrentPrice += currentItemPrice * item.quantity;
-            totalNormalPrice += currentItemStrikethroughPrice * item.quantity;
-            bundleDetails.push({ id: product.id, name: product.name, size: itemSelectedSize, option: null, quantity: item.quantity, price: currentItemPrice, strikethroughPrice: currentItemStrikethroughPrice });
-        });
-        const finalDiscountedBundlePrice = totalCurrentPrice - BUNDLE_DISCOUNT_BORDERLAND;
-        const savings = totalNormalPrice - finalDiscountedBundlePrice;
-        dom.bundleBorderlandNormalPrice.innerHTML = formatCurrency(totalNormalPrice);
-        dom.bundleBorderlandDiscountedPrice.textContent = formatCurrency(finalDiscountedBundlePrice);
-        if (allSelectionsMade) {
-            dom.addBundleBorderlandToCartBtn.disabled = false;
-            dom.bundleBorderlandSavingsMessage.textContent = `Hemat ${formatCurrency(savings)}!`;
-            bundle.calculatedPrice = finalDiscountedBundlePrice;
-            bundle.bundleDetails = bundleDetails;
-        } else {
-            dom.addBundleBorderlandToCartBtn.disabled = true;
-            dom.bundleBorderlandSavingsMessage.textContent = 'Pilih ukuran untuk melihat penghematan!';
-            bundle.calculatedPrice = 0;
-            bundle.bundleDetails = [];
-        }
-    };
-
     const updateBundleMerchEssentialsPrices = () => {
         const bundle = allProducts.find(b => b.id === 13);
         let totalNormalPrice = 0, totalCurrentPrice = 0, allSelectionsMade = true;
@@ -1676,7 +1564,6 @@
         if (e.target.matches('#bundle-face-card-wsmetal-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.wsMetalSize = e.target.dataset.size; updateBundleFaceCardPrices(); return; }
         if (e.target.matches('#bundle-face-card-keychain-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.keychainOption = e.target.dataset.option; updateBundleFaceCardPrices(); return; }
         if (e.target.matches('#bundle-face-card-sticker-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleFaceCardSelections.stickerOption = e.target.dataset.option; updateBundleFaceCardPrices(); return; }
-        if (e.target.matches('#bundle-borderland-wskp-size-options .size-btn')) { e.target.parentElement.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleBorderlandSelections.wsKpSize = e.target.dataset.size; updateBundleBorderlandPrices(); return; }
         if (e.target.matches('#bundle-merch-essentials-keychain-options .option-btn')) { e.target.parentElement.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove("bg-green-600", "text-white")); e.target.classList.add("bg-green-600", "text-white"); bundleMerchEssentialsSelections.keychainOption = e.target.dataset.option; updateBundleMerchEssentialsPrices(); return; }
 
         const closeModalBtn = e.target.closest(".close-modal-btn");
@@ -1743,12 +1630,6 @@
                 dom.bundleFaceCardKeychainOptions.innerHTML = keychainProduct.options.map(option => `<button class="option-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-option="${option}">${option}</button>`).join("");
                 dom.bundleFaceCardStickerOptions.innerHTML = stickerProduct.options.map(option => `<button class="option-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-option="${option}">${option}</button>`).join("");
                 updateBundleFaceCardPrices(); 
-            } else if (promoId === 12) { 
-                targetModal = dom.bundleBorderlandModal;
-                bundleBorderlandSelections = { wsKpSize: null };
-                const wsKpProduct = allProducts.find(p => p.id === 2);
-                dom.bundleBorderlandWsKpSizeOptions.innerHTML = wsKpProduct.sizes.map(size => `<button class="size-btn border px-4 py-2 rounded-lg font-semibold hover:bg-green-600 hover:text-white transition-colors" data-size="${size}">${size}</button>`).join("");
-                updateBundleBorderlandPrices(); 
             } else if (promoId === 13) { 
                 targetModal = dom.bundleMerchEssentialsModal;
                 bundleMerchEssentialsSelections = { keychainOption: null };
@@ -1769,7 +1650,6 @@
 
     dom.addBundleFinalSuitToCartBtn.addEventListener('click', () => { const bundle = allProducts.find(b => b.id === 10); if (bundle.calculatedPrice > 0) { addToCart(bundle); toggleModal(dom.bundleFinalSuitModal, false); toggleModal(dom.cartModal, true); } else { showCustomAlert("Harap lengkapi semua pilihan untuk bundle ini."); } });
     dom.addBundleFaceCardToCartBtn.addEventListener('click', () => { const bundle = allProducts.find(b => b.id === 11); if (bundle.calculatedPrice > 0) { addToCart(bundle); toggleModal(dom.bundleFaceCardModal, false); toggleModal(dom.cartModal, true); } else { showCustomAlert("Harap lengkapi semua pilihan untuk bundle ini."); } });
-    dom.addBundleBorderlandToCartBtn.addEventListener('click', () => { const bundle = allProducts.find(b => b.id === 12); if (bundle.calculatedPrice > 0) { addToCart(bundle); toggleModal(dom.bundleBorderlandModal, false); toggleModal(dom.cartModal, true); } else { showCustomAlert("Harap lengkapi semua pilihan untuk bundle ini."); } });
     dom.addBundleMerchEssentialsToCartBtn.addEventListener('click', () => { const bundle = allProducts.find(b => b.id === 13); if (bundle.calculatedPrice > 0) { addToCart(bundle); toggleModal(dom.bundleMerchEssentialsModal, false); toggleModal(dom.cartModal, true); } else { showCustomAlert("Harap lengkapi semua pilihan untuk bundle ini."); } });
 
     dom.searchInput.addEventListener("input", (e) => {
